@@ -219,11 +219,24 @@
           </div>
         </div>
 
-        <!-- TÙY CHỌN ẢNH ĐẠI DIỆN / ICON -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tên Nền tảng / Game / MXH *</label>
+            <input type="text" id="accGame" required placeholder="VD: Facebook, Valorant, Discord..." oninput="handleGameNameInput(this.value)"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tên tài khoản / User *</label>
+            <input type="text" id="accUser" required placeholder="Username / Tên đăng nhập"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+          </div>
+        </div>
+
+        <!-- TÙY CHỌN ẢNH ĐẠI DIỆN DÙNG CHUNG CHO CẢ GAME -->
         <div class="p-3 bg-cyber-900/80 rounded-xl border border-slate-700/60 space-y-2">
           <label class="block text-xs font-medium text-cyan-300 flex items-center justify-between">
-            <span>Ảnh biểu tượng / Logo</span>
-            <span class="text-[10px] text-slate-400 font-normal">Tự tải ảnh lên hoặc dán Link</span>
+            <span>Ảnh biểu tượng (Dùng chung cho cả game này)</span>
+            <span class="text-[10px] text-slate-400 font-normal">Tải 1 lần - Mọi nick cùng game tự có</span>
           </label>
           
           <div class="flex items-center gap-3">
@@ -239,22 +252,9 @@
                 <input type="file" id="accIconFileInput" accept="image/*" class="hidden" onchange="handleIconFileSelect(event)">
                 <button type="button" onclick="clearCustomIcon()" id="removeIconBtn" class="text-xs text-rose-400 hover:underline hidden">Xóa ảnh</button>
               </div>
-              <input type="url" id="accIconUrl" placeholder="Hoặc dán trực tiếp Link ảnh (URL)..." oninput="handleIconUrlInput(this.value)"
+              <input type="url" id="accIconUrl" placeholder="Hoặc dán Link ảnh online..." oninput="handleIconUrlInput(this.value)"
                 class="w-full px-2.5 py-1.5 bg-cyber-800 border border-slate-700 rounded-lg text-xs text-white focus:border-cyan-500">
             </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Tên Nền tảng / Game / MXH *</label>
-            <input type="text" id="accGame" required placeholder="VD: Facebook, Valorant, Discord..."
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Tên tài khoản / User *</label>
-            <input type="text" id="accUser" required placeholder="Username / Tên đăng nhập"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
         </div>
 
@@ -349,18 +349,26 @@
     let currentUser = null;
     let masterKey = null;
     let accounts = [];
+    let platformIcons = {}; // Kho lưu logo theo tên Game: { "valorant": "data:image...", "facebook": "https://..." }
     let isRegisterMode = false;
     let currentCategoryFilter = 'ALL';
 
-    // ==================== XỬ LÝ ẢNH ICON HIỂN THỊ ====================
+    // Tìm icon dùng chung theo tên Game
+    function getPlatformSharedIcon(gameName) {
+      if (!gameName) return '';
+      const key = gameName.trim().toLowerCase();
+      return platformIcons[key] || '';
+    }
+
+    // Hiển thị Icon trên từng thẻ
     function getPlatformIcon(item) {
-      // 1. Nếu người dùng tự tải ảnh hoặc dán link ảnh: Ưu tiên hiển thị
-      const customImg = item.iconBase64 || item.iconUrl;
-      if (customImg) {
-        return `<img src="${customImg}" alt="${escapeHtml(item.game)}" class="w-8 h-8 rounded-xl object-cover border border-slate-700 shrink-0" onerror="this.style.display='none'">`;
+      // 1. Kiểm tra trong kho ảnh chung của Game này
+      const sharedImg = getPlatformSharedIcon(item.game);
+      if (sharedImg) {
+        return `<img src="${sharedImg}" alt="${escapeHtml(item.game)}" class="w-8 h-8 rounded-xl object-cover border border-slate-700 shrink-0" onerror="this.style.display='none'">`;
       }
 
-      // 2. Tự động tìm logo hệ thống nếu không tự thêm ảnh
+      // 2. Tự động nhận diện logo hệ thống
       const n = (item.game || '').toLowerCase().trim();
 
       if (n.includes('facebook') || n === 'fb') {
@@ -395,7 +403,7 @@
       }
       if (n.includes('riot') || n.includes('valorant') || n.includes('league') || n.includes('lol') || n.includes('liên minh')) {
         return `<div class="w-8 h-8 rounded-xl bg-[#D13639]/20 border border-[#D13639]/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-[#D13639]" viewBox="0 0 24 24"><path d="M13.414 1.707l-9.043 4.22 3.037 11.836 3.04-.647-.947-3.69 1.838-.392.83 3.235 2.072-.442-.832-3.236 1.839-.391.83 3.235 2.072-.442-.832-3.235 1.84-.392.83 3.235 3.003-.64L19.467 4.19zm-3.064 18.06l-3.315.706.745 2.905 3.314-.707zm5.955-1.267l-3.313.706.744 2.905 3.314-.706z"/></svg>
+          <svg class="w-4 h-4 fill-[#D13639]" viewBox="0 0 24 24"><path d="M13.414 1.707l-9.043 4.22 3.037 11.836 3.04-.647-.947-3.69 1.838-.392.83 3.235 2.072-.442-.832-3.236 1.839-.391.83 3.235 2.072-.442-.832-3.235 1.84-.392.83 3.235 3.003-.64L19.467 4.19zm-3.064 18.06l-3.315.706.745 2.905 3.314-.707zm5.955-1.267l-3.313.706.744 2.905 3.314-.707z"/></svg>
         </div>`;
       }
       if (n.includes('youtube') || n.includes('yt')) {
@@ -404,7 +412,7 @@
         </div>`;
       }
 
-      // 3. Fallback: Avatar chữ cái mang phong cách Cyberpunk
+      // 3. Chữ cái mặc định
       const firstLetter = (item.game || 'G').trim().charAt(0).toUpperCase();
       const isSoc = item.category === 'SOCIAL';
       const bgGrad = isSoc ? 'from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/40' : 'from-cyan-500/20 to-purple-500/20 text-cyan-400 border-cyan-500/40';
@@ -414,7 +422,21 @@
       </div>`;
     }
 
-    // ==================== XỬ LÝ CHỌN VÀ NÉN ẢNH ĐẠI DIỆN ====================
+    // Tự động kiểm tra xem Game vừa gõ đã có icon chung chưa
+    function handleGameNameInput(val) {
+      const existing = getPlatformSharedIcon(val);
+      if (existing) {
+        if (existing.startsWith('data:image')) {
+          document.getElementById('accCustomIconBase64').value = existing;
+          document.getElementById('accIconUrl').value = '';
+        } else {
+          document.getElementById('accCustomIconBase64').value = '';
+          document.getElementById('accIconUrl').value = existing;
+        }
+        updateIconPreview(existing);
+      }
+    }
+
     function handleIconFileSelect(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -426,7 +448,6 @@
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        // Nén nhẹ ảnh về kích thước icon (80x80) để tối ưu dung lượng đám mây
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
@@ -564,10 +585,24 @@
           const bytes = CryptoJS.AES.decrypt(encrypted, masterKey);
           const decrypted = bytes.toString(CryptoJS.enc.Utf8);
           if (!decrypted) throw new Error();
-          accounts = JSON.parse(decrypted);
+          
+          const parsed = JSON.parse(decrypted);
+          // Hỗ trợ cấu trúc lưu trữ mới (kèm kho icon)
+          if (Array.isArray(parsed)) {
+            accounts = parsed;
+            platformIcons = {};
+          } else {
+            accounts = parsed.accounts || [];
+            platformIcons = parsed.platformIcons || {};
+          }
 
+          // Cập nhật lại kho icon từ tài khoản cũ nếu có
           accounts.forEach(a => {
             if (!a.category) a.category = 'GAME';
+            if (a.iconBase64 || a.iconUrl) {
+              const k = (a.game || '').trim().toLowerCase();
+              if (k && !platformIcons[k]) platformIcons[k] = a.iconBase64 || a.iconUrl;
+            }
           });
         } catch (e) {
           alert('Sai Master Password! Vui lòng nhập lại đúng khóa bảo vệ.');
@@ -577,6 +612,7 @@
         }
       } else {
         accounts = [];
+        platformIcons = {};
       }
       updateTrashCount();
       updatePlatformFilter();
@@ -585,7 +621,11 @@
 
     async function pushToCloud() {
       if (!currentUser || !masterKey) return;
-      const jsonStr = JSON.stringify(accounts);
+      const packageData = {
+        accounts: accounts,
+        platformIcons: platformIcons
+      };
+      const jsonStr = JSON.stringify(packageData);
       const encrypted = CryptoJS.AES.encrypt(jsonStr, masterKey).toString();
 
       await db.collection('vaults').doc(currentUser.uid).set({
@@ -601,6 +641,7 @@
       currentUser = null;
       masterKey = null;
       accounts = [];
+      platformIcons = {};
       document.getElementById('cloudEmail').readOnly = false;
       document.getElementById('accountsGrid').innerHTML = '';
       document.getElementById('lockScreen').classList.remove('hidden');
@@ -921,13 +962,15 @@
           document.getElementById('accPhone').value = item.phone || '';
           document.getElementById('accNotes').value = item.notes || '';
 
-          // Nạp lại icon cũ nếu có
-          if (item.iconBase64) {
-            document.getElementById('accCustomIconBase64').value = item.iconBase64;
-            updateIconPreview(item.iconBase64);
-          } else if (item.iconUrl) {
-            document.getElementById('accIconUrl').value = item.iconUrl;
-            updateIconPreview(item.iconUrl);
+          // Lấy icon chung của Game
+          const existingImg = getPlatformSharedIcon(item.game);
+          if (existingImg) {
+            if (existingImg.startsWith('data:image')) {
+              document.getElementById('accCustomIconBase64').value = existingImg;
+            } else {
+              document.getElementById('accIconUrl').value = existingImg;
+            }
+            updateIconPreview(existingImg);
           }
         }
       } else {
@@ -964,19 +1007,24 @@
         if (r.checked) selectedCategory = r.value;
       }
 
+      const gameName = document.getElementById('accGame').value.trim();
       const iconBase64 = document.getElementById('accCustomIconBase64').value;
       const iconUrl = document.getElementById('accIconUrl').value.trim();
 
+      // CẬP NHẬT KHO ICON CHUNG CHO TOÀN BỘ GAME / NỀN TẢNG NÀY
+      const platformKey = gameName.toLowerCase();
+      if (iconBase64 || iconUrl) {
+        platformIcons[platformKey] = iconBase64 || iconUrl;
+      }
+
       const data = {
         category: selectedCategory,
-        game: document.getElementById('accGame').value.trim(),
+        game: gameName,
         user: document.getElementById('accUser').value.trim(),
         password: document.getElementById('accPass').value,
         email: document.getElementById('accEmail').value.trim(),
         phone: document.getElementById('accPhone').value.trim(),
-        notes: document.getElementById('accNotes').value.trim(),
-        iconBase64: iconBase64 || '',
-        iconUrl: iconUrl || ''
+        notes: document.getElementById('accNotes').value.trim()
       };
 
       if (id) {
@@ -992,7 +1040,7 @@
       closeModal();
       updatePlatformFilter();
       renderAccounts();
-      showToast('Đã lưu và đồng bộ lên đám mây!');
+      showToast('Đã lưu và cập nhật ảnh cho toàn bộ tài khoản cùng game!');
     }
 
     async function moveToTrash(id) {
