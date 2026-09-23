@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GameVault - Trình Lưu Trữ & Quản Lý Tài Khoản Game An Toàn</title>
-  
+  <title>Game Account Vault</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Tailwind Configuration for Cyber Gaming Theme -->
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- CryptoJS for AES-256 Client-side Encryption -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <!-- SheetJS (xlsx) for Excel Import -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -15,730 +19,639 @@
         extend: {
           colors: {
             cyber: {
-              950: '#07090e',
-              900: '#0b0f19',
-              800: '#121826',
-              700: '#1f293d',
-              neon: '#00f2fe',
-              purple: '#9d4edd',
-              pink: '#ff007f',
-              accent: '#39ff14',
+              900: '#090d16',
+              800: '#0f172a',
+              700: '#1e293b',
+              600: '#334155',
+              neon: '#06b6d4',
+              accent: '#8b5cf6',
+              danger: '#f43f5e',
+              success: '#10b981',
+              warning: '#f59e0b'
             }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
           }
         }
       }
     }
   </script>
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- CryptoJS for AES Client-side Encryption -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
-
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #07090e;
-      color: #e2e8f0;
-      user-select: none;
+      background-color: #090d16;
+      color: #f1f5f9;
     }
-    .font-mono-code {
-      font-family: 'JetBrains Mono', monospace;
+    .font-gaming {
+      font-family: 'Chakra Petch', sans-serif;
     }
-    /* Neon Glow Effects */
-    .glow-cyan {
-      box-shadow: 0 0 20px -3px rgba(0, 242, 254, 0.35);
+    .neon-border {
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
     }
-    .glow-purple {
-      box-shadow: 0 0 25px -3px rgba(157, 78, 221, 0.4);
+    .neon-glow:hover {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
     }
-    .border-glow:focus {
-      outline: none;
-      border-color: #00f2fe;
-      box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
-    }
-    /* Custom Scrollbar */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #0b0f19;
+      background: #090d16;
     }
     ::-webkit-scrollbar-thumb {
-      background: #1f293d;
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #39ff14;
+      background: #334155;
+      border-radius: 3px;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#121826] via-[#07090e] to-black">
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
 
-  <!-- Top Navigation -->
-  <header class="border-b border-cyber-700/60 bg-cyber-900/80 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-500 to-pink-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-        <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
-      </div>
-      <div>
-        <h1 class="text-lg sm:text-xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-300 to-pink-400">GAME VAULT</h1>
-        <p class="text-[10px] text-gray-400 tracking-widest font-mono uppercase">Mã hóa Client-Side AES-256</p>
-      </div>
-    </div>
+  <!-- ==================== MÀN HÌNH KHÓA / MASTER PASSWORD ==================== -->
+  <div id="lockScreen" class="fixed inset-0 z-50 bg-[#090d16] flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-cyber-800 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-16 -right-16 w-36 h-36 bg-cyan-500/10 rounded-full blur-2xl"></div>
+      <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-purple-500/10 rounded-full blur-2xl"></div>
 
-    <!-- Right Actions / Status -->
-    <div id="nav-actions" class="flex items-center space-x-3 hidden">
-      <div class="hidden sm:flex items-center text-xs text-gray-400 bg-cyber-800/80 border border-cyber-700 px-3 py-1.5 rounded-lg space-x-2">
-        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="account-counter">0 tài khoản</span>
-      </div>
-
-      <!-- Auto lock countdown badge -->
-      <div class="hidden md:flex items-center space-x-1.5 text-xs font-mono text-cyan-400 bg-cyan-950/40 border border-cyan-800/60 px-3 py-1.5 rounded-lg" title="Tự động khóa sau thời gian chờ">
-        <i data-lucide="timer" class="w-3.5 h-3.5"></i>
-        <span id="lock-timer">05:00</span>
-      </div>
-
-      <!-- Quick Action Buttons -->
-      <button onclick="openBackupModal()" class="p-2 text-gray-300 hover:text-cyan-400 hover:bg-cyber-800 rounded-lg transition-colors" title="Sao lưu & Phục hồi">
-        <i data-lucide="database" class="w-5 h-5"></i>
-      </button>
-
-      <button onclick="lockVault()" class="flex items-center space-x-2 px-3 py-1.5 bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold rounded-lg transition-all" title="Khóa ngay lập tức">
-        <i data-lucide="lock" class="w-4 h-4"></i>
-        <span class="hidden sm:inline">Khóa kho</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- SCREEN 1: LOCK / SETUP SCREEN -->
-  <main id="auth-screen" class="flex-1 flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-cyber-900/90 border border-cyber-700/80 rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-      <!-- Ambient Glow Decor -->
-      <div class="absolute -top-16 -right-16 w-32 h-32 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-16 -left-16 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="text-center mb-6">
-        <div class="inline-flex p-3 rounded-2xl bg-cyber-800 border border-cyber-700 mb-3 shadow-inner">
-          <i data-lucide="key-round" class="w-8 h-8 text-cyan-400"></i>
+      <div class="text-center mb-6 relative">
+        <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="shield-check" class="w-9 h-9 text-white"></i>
         </div>
-        <h2 id="auth-title" class="text-xl font-bold text-white tracking-wide">Mở Khóa Kho Game</h2>
-        <p id="auth-subtitle" class="text-xs text-gray-400 mt-1">Nhập Mật khẩu / Mã PIN chủ để giải mã dữ liệu</p>
+        <h1 class="text-2xl sm:text-3xl font-bold font-gaming tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-400">
+          GAME VAULT
+        </h1>
+        <p id="lockScreenSubtext" class="text-sm text-slate-400 mt-1">Kho lưu trữ tài khoản game bảo mật AES-256</p>
       </div>
 
-      <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+      <form id="masterPassForm" class="space-y-4 relative">
         <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Mật khẩu Chủ (Master Key)</label>
+          <label id="masterPassLabel" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
+            Mật khẩu tổng (Master Password)
+          </label>
           <div class="relative">
-            <input type="password" id="master-password" required placeholder="Nhập mã PIN hoặc mật khẩu..."
-              class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition-all font-mono-code placeholder:text-gray-600">
-            <button type="button" onclick="togglePassVisibility('master-password', this)" class="absolute right-3 top-3 text-gray-500 hover:text-gray-300">
-              <i data-lucide="eye" class="w-4 h-4"></i>
+            <input type="password" id="masterPasswordInput" required placeholder="••••••••••••"
+              class="w-full px-4 py-3 bg-cyber-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-mono text-sm">
+            <button type="button" onclick="togglePassVisibility('masterPasswordInput', 'masterEyeIcon')" class="absolute right-3 top-3.5 text-slate-400 hover:text-white">
+              <i data-lucide="eye" id="masterEyeIcon" class="w-5 h-5"></i>
             </button>
           </div>
         </div>
 
-        <div id="confirm-password-container" class="hidden">
-          <label class="block text-xs font-semibold text-gray-300 mb-1.5 uppercase tracking-wider">Xác nhận Mật khẩu Chủ</label>
-          <input type="password" id="confirm-master-password" placeholder="Nhập lại mật khẩu để khởi tạo..."
-            class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition-all font-mono-code placeholder:text-gray-600">
+        <div id="confirmPassGroup" class="hidden">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
+            Xác nhận mật khẩu tổng
+          </label>
+          <input type="password" id="confirmMasterPasswordInput" placeholder="••••••••••••"
+            class="w-full px-4 py-3 bg-cyber-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-mono text-sm">
         </div>
 
-        <div id="auth-error" class="hidden text-xs text-rose-400 bg-rose-950/40 border border-rose-800/60 p-2.5 rounded-lg flex items-center space-x-2">
-          <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
-          <span id="auth-error-msg">Mật khẩu không chính xác!</span>
-        </div>
+        <p id="lockErrorMsg" class="text-xs text-rose-400 font-medium hidden flex items-center gap-1.5"></p>
 
-        <button type="submit" id="auth-submit-btn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-semibold text-sm tracking-wide shadow-lg shadow-cyan-500/20 active:scale-[0.98] transition-all flex items-center justify-center space-x-2">
+        <button type="submit" id="unlockBtn" class="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-[0.99]">
           <i data-lucide="unlock" class="w-4 h-4"></i>
-          <span>MỞ KHÓA NGAY</span>
+          <span id="unlockBtnText">Mở Khóa Kho</span>
         </button>
       </form>
+    </div>
+  </div>
 
-      <div class="mt-6 pt-5 border-t border-cyber-800 text-center">
-        <p class="text-[11px] text-gray-500">Mọi thông tin mật khẩu được mã hóa an toàn bằng thuật toán AES. Mật khẩu chủ của bạn không được gửi lên bất kỳ máy chủ nào.</p>
+  <!-- ==================== GIAO DIỆN CHÍNH ==================== -->
+  <header class="border-b border-slate-800 bg-cyber-800/80 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
+          <i data-lucide="gamepad-2" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <span class="text-lg font-bold font-gaming text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 leading-none block">
+            GAME VAULT
+          </span>
+          <span class="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            AES-256 Encrypted
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Nút nhập Excel -->
+        <label for="excelFileInput" title="Nhập danh sách từ Excel (.xlsx, .xls, .csv)"
+          class="cursor-pointer px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i>
+          <span class="hidden sm:inline">Nhập Excel</span>
+        </label>
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+
+        <!-- Menu Công cụ dữ liệu -->
+        <button onclick="toggleDataDropdown()" class="px-2.5 sm:px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition">
+          <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i>
+          <span class="hidden md:inline">Dữ liệu</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+        </button>
+
+        <div id="dataDropdown" class="hidden absolute right-16 top-14 w-48 bg-cyber-800 border border-slate-700 rounded-xl shadow-2xl py-1 z-40 text-xs">
+          <button onclick="exportData()" class="w-full px-4 py-2.5 text-left text-slate-300 hover:bg-slate-700 flex items-center gap-2">
+            <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-400"></i> Xuất sao lưu (JSON)
+          </button>
+          <label for="importJsonInput" class="w-full px-4 py-2.5 text-left text-slate-300 hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
+            <i data-lucide="upload" class="w-3.5 h-3.5 text-purple-400"></i> Nhập dữ liệu (JSON)
+          </label>
+          <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importData(event)">
+        </div>
+
+        <!-- Khóa kho -->
+        <button onclick="lockVault()" title="Khóa ngay lập tức"
+          class="px-2.5 sm:px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+          <i data-lucide="lock" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Khóa</span>
+        </button>
       </div>
     </div>
-  </main>
+  </header>
 
-  <!-- SCREEN 2: VAULT DASHBOARD -->
-  <main id="vault-screen" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 hidden">
-    <!-- Top Action Bar (Search, Filter, New Button) -->
-    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-cyber-900/60 border border-cyber-800 p-4 rounded-2xl backdrop-blur-md">
-      <!-- Search & Category Filter -->
-      <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+  <!-- NỘI DUNG CHÍNH -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full space-y-6">
+
+    <!-- Thanh công cụ: Tìm kiếm, Lọc và Nút Thêm mới -->
+    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+      <div class="flex flex-1 flex-col sm:flex-row gap-2.5">
         <div class="relative flex-1">
-          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-gray-500"></i>
-          <input type="text" id="search-input" oninput="renderAccountCards()" placeholder="Tìm kiếm tên game, username, server..."
-            class="w-full bg-cyber-950/80 border border-cyber-700/80 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-colors">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm theo game, tài khoản, email, số ĐT..."
+            class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
         </div>
-        <select id="game-filter" onchange="renderAccountCards()" class="bg-cyber-950/80 border border-cyber-700/80 text-gray-300 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-cyan-400">
+        <select id="gameFilterSelect" onchange="renderAccounts()"
+          class="px-3.5 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-cyan-500 transition">
           <option value="ALL">Tất cả Game</option>
-          <option value="Genshin Impact">Genshin Impact</option>
-          <option value="Valorant">Valorant</option>
-          <option value="League of Legends">Liên Minh Huyền Thoại</option>
-          <option value="Steam">Steam</option>
-          <option value="Epic Games">Epic Games</option>
-          <option value="PlayStation">PlayStation</option>
-          <option value="Xbox">Xbox</option>
-          <option value="Khác">Game khác</option>
         </select>
       </div>
 
-      <!-- Button Add Account & Password Generator -->
       <div class="flex items-center gap-2">
-        <button onclick="openPasswordGeneratorModal()" class="px-3.5 py-2.5 bg-cyber-800 hover:bg-cyber-700 text-cyan-400 border border-cyber-700 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-all">
-          <i data-lucide="sparkles" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Tạo Pass Ngẫu Nhiên</span>
-        </button>
-        <button onclick="openAccountModal()" class="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-2 shadow-md shadow-cyan-500/20 active:scale-95 transition-all">
-          <i data-lucide="plus" class="w-4 h-4"></i>
+        <button onclick="openModal()" class="flex-1 sm:flex-initial px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 transition active:scale-95">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
           <span>Thêm Tài Khoản</span>
         </button>
       </div>
     </div>
 
-    <!-- Grid of Vault Accounts -->
-    <div id="accounts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- Injected by JavaScript -->
+    <!-- Thông báo banner Excel -->
+    <div class="p-3 bg-cyan-950/40 border border-cyan-800/60 rounded-xl flex items-center justify-between text-xs text-cyan-200">
+      <div class="flex items-center gap-2">
+        <i data-lucide="info" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+        <span>Hỗ trợ tải trực tiếp bảng Excel với các cột: <b>Game Name, User, Password, Email, Phone number, Notes</b></span>
+      </div>
+      <label for="excelFileInput" class="text-cyan-400 underline font-semibold cursor-pointer hover:text-cyan-300 ml-2 whitespace-nowrap">Chọn file</label>
     </div>
 
-    <!-- Empty State -->
-    <div id="empty-state" class="hidden flex-col items-center justify-center p-12 text-center bg-cyber-900/30 border border-cyber-800/80 rounded-2xl border-dashed">
-      <div class="w-16 h-16 rounded-full bg-cyber-800/80 flex items-center justify-center mb-4 text-gray-500">
-        <i data-lucide="gamepad-2" class="w-8 h-8"></i>
+    <!-- Danh sách thẻ tài khoản -->
+    <div id="accountsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      <!-- Dynamic render bằng Javascript -->
+    </div>
+
+    <!-- Trạng thái trống (Empty State) -->
+    <div id="emptyState" class="hidden text-center py-16 px-4">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-500">
+        <i data-lucide="inbox" class="w-8 h-8"></i>
       </div>
-      <h3 class="text-base font-semibold text-gray-300">Chưa có tài khoản game nào</h3>
-      <p class="text-xs text-gray-500 max-w-sm mt-1 mb-5">Thêm tài khoản game yêu thích của bạn hoặc nhập dữ liệu đã sao lưu từ trước để bắt đầu.</p>
-      <button onclick="openAccountModal()" class="px-4 py-2 bg-cyber-800 hover:bg-cyber-700 border border-cyan-500/30 text-cyan-400 text-xs font-semibold rounded-xl flex items-center space-x-2 transition-all">
-        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-        <span>Thêm tài khoản ngay</span>
+      <h3 class="text-lg font-semibold text-slate-300 font-gaming">Chưa có tài khoản nào</h3>
+      <p class="text-slate-500 text-sm max-w-sm mx-auto mt-1 mb-5">Bấm Thêm Tài Khoản hoặc Nhập file Excel để bắt đầu lưu trữ an toàn.</p>
+      <button onclick="openModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 rounded-xl text-sm font-medium inline-flex items-center gap-2">
+        <i data-lucide="plus" class="w-4 h-4"></i> Thêm tài khoản đầu tiên
       </button>
     </div>
   </main>
 
-  <!-- MODAL: ADD / EDIT ACCOUNT -->
-  <div id="account-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
-    <div class="w-full max-w-lg bg-cyber-900 border border-cyber-700 rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-4 border-b border-cyber-800">
-        <div class="flex items-center space-x-2">
-          <i data-lucide="gamepad" class="w-5 h-5 text-cyan-400"></i>
-          <h3 id="account-modal-title" class="text-base font-bold text-white">Thêm Tài Khoản Mới</h3>
-        </div>
-        <button onclick="closeAccountModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
+  <!-- ==================== MODAL THÊM / SỬA TÀI KHOẢN ==================== -->
+  <div id="accountModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-lg bg-cyber-800 border border-slate-700 rounded-2xl p-6 shadow-2xl relative my-8">
+      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3 mb-4">
+        <h3 id="modalTitle" class="text-lg font-bold font-gaming text-cyan-400 flex items-center gap-2">
+          <i data-lucide="gamepad" class="w-5 h-5"></i> Thêm Tài Khoản Mới
+        </h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="account-form" onsubmit="saveAccountForm(event)" class="mt-4 space-y-4">
-        <input type="hidden" id="account-id">
+      <form id="accountForm" onsubmit="saveAccount(event)" class="space-y-3.5">
+        <input type="hidden" id="editAccountId">
 
-        <!-- Game Select / Custom Game Name -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1">Game / Nền tảng <span class="text-rose-400">*</span></label>
-            <select id="acc-game-preset" onchange="handleGameSelectChange(this.value)" class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
-              <option value="Genshin Impact">Genshin Impact</option>
-              <option value="Valorant">Valorant</option>
-              <option value="League of Legends">Liên Minh Huyền Thoại</option>
-              <option value="Steam">Steam</option>
-              <option value="Epic Games">Epic Games</option>
-              <option value="Honkai: Star Rail">Honkai: Star Rail</option>
-              <option value="CS2 / CS:GO">Counter-Strike 2</option>
-              <option value="Roblox">Roblox</option>
-              <option value="Minecraft">Minecraft</option>
-              <option value="Khác">Tùy chỉnh khác...</option>
-            </select>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Game / Nền tảng *</label>
+            <input type="text" id="accGame" required placeholder="VD: Genshin Impact, Steam, Valorant"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1">Tên hiển thị Game <span class="text-rose-400">*</span></label>
-            <input type="text" id="acc-game-name" required placeholder="VD: Genshin Impact"
-              class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tên tài khoản / User *</label>
+            <input type="text" id="accUser" required placeholder="Username / Tên đăng nhập"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500">
           </div>
         </div>
 
-        <!-- Username / Email -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1">Tài khoản / Email đăng nhập <span class="text-rose-400">*</span></label>
-          <div class="relative">
-            <input type="text" id="acc-username" required placeholder="username_pro hoặc email@domain.com"
-              class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
-            <button type="button" onclick="pasteToInput('acc-username')" class="absolute right-2.5 top-2 text-[10px] text-cyan-400 hover:underline">Dán</button>
-          </div>
-        </div>
-
-        <!-- Password with Generator Quick Trigger -->
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="text-xs font-semibold text-gray-300">Mật khẩu <span class="text-rose-400">*</span></label>
-            <button type="button" onclick="fillQuickRandomPassword()" class="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center space-x-1">
-              <i data-lucide="dice-5" class="w-3 h-3"></i>
-              <span>Tạo ngẫu nhiên</span>
+            <label class="block text-xs font-medium text-slate-300">Mật khẩu *</label>
+            <button type="button" onclick="generateRandomPass()" class="text-[11px] text-cyan-400 hover:underline flex items-center gap-1">
+              <i data-lucide="refresh-cw" class="w-3 h-3"></i> Tạo mật khẩu mạnh
             </button>
           </div>
           <div class="relative">
-            <input type="password" id="acc-password" required placeholder="Mật khẩu của tài khoản..."
-              class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono-code">
-            <button type="button" onclick="togglePassVisibility('acc-password', this)" class="absolute right-3 top-2.5 text-gray-500 hover:text-gray-300">
-              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            <input type="password" id="accPass" required placeholder="Mật khẩu"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white font-mono focus:outline-none focus:border-cyan-500 pr-10">
+            <button type="button" onclick="togglePassVisibility('accPass', 'modalEyeIcon')" class="absolute right-3 top-2.5 text-slate-400 hover:text-white">
+              <i data-lucide="eye" id="modalEyeIcon" class="w-4 h-4"></i>
             </button>
           </div>
         </div>
 
-        <!-- Server / Region -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1">Server / Khu vực</label>
-            <input type="text" id="acc-server" placeholder="VD: Asia, VN, NA, Europe..."
-              class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Email liên kết</label>
+            <input type="text" id="accEmail" placeholder="example@gmail.com"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-gray-300 mb-1">Mã Pin / Backup 2FA</label>
-            <input type="text" id="acc-pin" placeholder="Mã phụ / Code cấp 2..."
-              class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono-code">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Số điện thoại</label>
+            <input type="text" id="accPhone" placeholder="09xxxxxxxx"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500">
           </div>
         </div>
 
-        <!-- Notes -->
         <div>
-          <label class="block text-xs font-semibold text-gray-300 mb-1">Ghi chú bổ sung (Skin, Rank, Đồ hiếm...)</label>
-          <textarea id="acc-notes" rows="2" placeholder="VD: Full tướng, Rank Kim Cương, Email gốc đã liên kết..."
-            class="w-full bg-cyber-950 border border-cyber-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"></textarea>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (Server, tướng, rank, câu hỏi bảo mật...)</label>
+          <textarea id="accNotes" rows="2" placeholder="Server Asia, AR 60..."
+            class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500 resize-none"></textarea>
         </div>
 
-        <!-- Actions -->
-        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-cyber-800">
-          <button type="button" onclick="closeAccountModal()" class="px-4 py-2 text-xs font-medium text-gray-400 hover:text-white rounded-xl">Hủy</button>
-          <button type="submit" class="px-5 py-2 text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-black rounded-xl shadow-lg shadow-cyan-500/20 active:scale-95 transition-all">Lưu Tài Khoản</button>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-700/80">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm">
+            Hủy
+          </button>
+          <button type="submit" class="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm transition">
+            Lưu Tài Khoản
+          </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: ADVANCED PASSWORD GENERATOR -->
-  <div id="generator-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
-    <div class="w-full max-w-md bg-cyber-900 border border-cyber-700 rounded-2xl p-6 shadow-2xl relative">
-      <div class="flex items-center justify-between pb-3 border-b border-cyber-800">
-        <div class="flex items-center space-x-2 text-cyan-400">
-          <i data-lucide="key" class="w-5 h-5"></i>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Tạo Mật Khẩu Siêu Mạnh</h3>
-        </div>
-        <button onclick="closePasswordGeneratorModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="mt-4 space-y-4">
-        <!-- Result Box -->
-        <div class="relative bg-cyber-950 border border-cyber-700 rounded-xl p-3.5 flex items-center justify-between">
-          <span id="gen-result" class="font-mono-code text-sm text-cyan-300 font-semibold break-all select-all">PasswordHere123!</span>
-          <div class="flex items-center space-x-1.5 ml-2">
-            <button onclick="generateCustomPassword()" class="p-1.5 text-gray-400 hover:text-cyan-400 transition-colors" title="Đổi chuỗi mới">
-              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            </button>
-            <button onclick="copyGeneratedPassword()" class="p-1.5 text-gray-400 hover:text-emerald-400 transition-colors" title="Sao chép">
-              <i data-lucide="copy" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Password Strength Meter -->
-        <div>
-          <div class="flex justify-between text-[11px] mb-1">
-            <span class="text-gray-400">Độ phức tạp:</span>
-            <span id="gen-strength-label" class="text-emerald-400 font-semibold">Rất Mạnh</span>
-          </div>
-          <div class="w-full h-1.5 bg-cyber-800 rounded-full overflow-hidden">
-            <div id="gen-strength-bar" class="h-full bg-emerald-400 w-full transition-all duration-300"></div>
-          </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="space-y-3 pt-2">
-          <div>
-            <div class="flex justify-between text-xs text-gray-300 mb-1">
-              <span>Độ dài mật khẩu:</span>
-              <span id="gen-length-val" class="font-mono-code text-cyan-400 font-bold">16</span>
-            </div>
-            <input type="range" id="gen-length" min="8" max="32" value="16" oninput="updatePasswordLength(this.value)" class="w-full accent-cyan-400 cursor-pointer">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2 text-xs text-gray-300">
-            <label class="flex items-center space-x-2 bg-cyber-950 p-2 rounded-lg border border-cyber-800 cursor-pointer">
-              <input type="checkbox" id="gen-opt-upper" checked onchange="generateCustomPassword()" class="rounded accent-cyan-400">
-              <span>Chữ hoa (A-Z)</span>
-            </label>
-            <label class="flex items-center space-x-2 bg-cyber-950 p-2 rounded-lg border border-cyber-800 cursor-pointer">
-              <input type="checkbox" id="gen-opt-lower" checked onchange="generateCustomPassword()" class="rounded accent-cyan-400">
-              <span>Chữ thường (a-z)</span>
-            </label>
-            <label class="flex items-center space-x-2 bg-cyber-950 p-2 rounded-lg border border-cyber-800 cursor-pointer">
-              <input type="checkbox" id="gen-opt-numbers" checked onchange="generateCustomPassword()" class="rounded accent-cyan-400">
-              <span>Chữ số (0-9)</span>
-            </label>
-            <label class="flex items-center space-x-2 bg-cyber-950 p-2 rounded-lg border border-cyber-800 cursor-pointer">
-              <input type="checkbox" id="gen-opt-symbols" checked onchange="generateCustomPassword()" class="rounded accent-cyan-400">
-              <span>Ký tự (!@#$%)</span>
-            </label>
-          </div>
-        </div>
-
-        <button onclick="applyPasswordToCurrentForm()" class="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-xs rounded-xl transition-colors">
-          Sử dụng mật khẩu này cho Form
-        </button>
-      </div>
-    </div>
+  <!-- TOAST THÔNG BÁO -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-cyber-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 text-sm pointer-events-none">
+    <i data-lucide="check-circle" id="toastIcon" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMsg">Thao tác thành công</span>
   </div>
 
-  <!-- MODAL: BACKUP & RESTORE DATA -->
-  <div id="backup-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
-    <div class="w-full max-w-md bg-cyber-900 border border-cyber-700 rounded-2xl p-6 shadow-2xl relative">
-      <div class="flex items-center justify-between pb-3 border-b border-cyber-800">
-        <div class="flex items-center space-x-2 text-indigo-400">
-          <i data-lucide="archive" class="w-5 h-5"></i>
-          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Sao Lưu & Phục Hồi</h3>
-        </div>
-        <button onclick="closeBackupModal()" class="text-gray-400 hover:text-white p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="mt-4 space-y-4">
-        <!-- Export Section -->
-        <div class="bg-cyber-950 p-4 rounded-xl border border-cyber-800">
-          <h4 class="text-xs font-bold text-cyan-400 mb-1">1. Xuất file mã hóa (Backup)</h4>
-          <p class="text-[11px] text-gray-400 mb-3">Tải tệp JSON đã mã hóa bằng mật khẩu chủ hiện tại. Dữ liệu hoàn toàn an toàn để lưu vào USB hoặc Google Drive.</p>
-          <button onclick="exportVaultData()" class="w-full py-2 bg-cyber-800 hover:bg-cyber-700 border border-cyber-700 text-xs font-semibold text-white rounded-lg flex items-center justify-center space-x-2">
-            <i data-lucide="download" class="w-4 h-4"></i>
-            <span>Tải về Vault-Backup.json</span>
-          </button>
-        </div>
-
-        <!-- Import Section -->
-        <div class="bg-cyber-950 p-4 rounded-xl border border-cyber-800">
-          <h4 class="text-xs font-bold text-purple-400 mb-1">2. Nhập file khôi phục (Restore)</h4>
-          <p class="text-[11px] text-gray-400 mb-3">Nhập tệp đã sao lưu trước đó. Lưu ý: Mật khẩu chủ hiện tại phải khớp với mật khẩu lúc tạo bản sao lưu.</p>
-          <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="handleFileImport(event)">
-          <button onclick="document.getElementById('import-file-input').click()" class="w-full py-2 bg-cyber-800 hover:bg-cyber-700 border border-cyber-700 text-xs font-semibold text-white rounded-lg flex items-center justify-center space-x-2">
-            <i data-lucide="upload" class="w-4 h-4"></i>
-            <span>Chọn tệp JSON để khôi phục</span>
-          </button>
-        </div>
-
-        <!-- Wipe All Data -->
-        <div class="pt-2">
-          <button onclick="wipeAllVaultData()" class="w-full py-2 text-rose-400 hover:bg-rose-950/30 text-xs font-medium rounded-lg border border-transparent hover:border-rose-900/50 transition-colors">
-            Xóa toàn bộ kho dữ liệu (Reset ứng dụng)
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Notification System (No Alert) -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-2 bg-cyber-900 border border-cyan-400/40 px-4 py-3 rounded-xl shadow-xl text-white text-xs">
-    <i id="toast-icon" data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
-    <span id="toast-msg">Đã thực hiện thành công!</span>
-  </div>
-
+  <!-- ==================== LOGIC JAVASCRIPT ==================== -->
   <script>
-    /* Global Storage Key Constants */
-    const STORAGE_KEY_CIPHER = 'GAME_VAULT_CIPHERTEXT';
-    const STORAGE_KEY_SALT = 'GAME_VAULT_VERIFIER';
-    const AUTO_LOCK_TIMEOUT_SECONDS = 300; // 5 minutes
+    const STORAGE_KEY = 'GAME_VAULT_ENCRYPTED_DATA_V2';
+    const HASH_KEY = 'GAME_VAULT_HASH_V2';
 
-    /* App In-Memory State */
     let masterKey = null;
-    let decryptedAccounts = [];
-    let lockTimerInterval = null;
-    let secondsLeftToLock = AUTO_LOCK_TIMEOUT_SECONDS;
-    let toastTimeout = null;
+    let accounts = [];
+    let autoLockTimer = null;
+    const AUTO_LOCK_MINUTES = 10;
 
-    /* On Page Load */
+    // Khởi động
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      checkVaultStatus();
-      setupActivityListeners();
-      generateCustomPassword();
+      initLockScreen();
+      resetInactivityTimer();
+      window.addEventListener('mousemove', resetInactivityTimer);
+      window.addEventListener('keydown', resetInactivityTimer);
+      window.addEventListener('click', (e) => {
+        if (!e.target.closest('#dataDropdown') && !e.target.closest('button[onclick="toggleDataDropdown()"]')) {
+          document.getElementById('dataDropdown').classList.add('hidden');
+        }
+      });
     });
 
-    /**
-     * Checks if this is the first run (no password set) or locked state.
-     */
-    function checkVaultStatus() {
-      const existingData = localStorage.getItem(STORAGE_KEY_CIPHER);
-      const authTitle = document.getElementById('auth-title');
-      const authSubtitle = document.getElementById('auth-subtitle');
-      const confirmContainer = document.getElementById('confirm-password-container');
-      const submitBtnSpan = document.getElementById('auth-submit-btn').querySelector('span');
-
-      if (!existingData) {
-        // First setup
-        authTitle.innerText = "Khởi Tạo Mật Khẩu Chủ";
-        authSubtitle.innerText = "Thiết lập mã PIN/Mật khẩu để bắt đầu bảo vệ kho game của bạn";
-        confirmContainer.classList.remove('hidden');
-        submitBtnSpan.innerText = "TẠO KHO LƯU TRỮ";
-      } else {
-        authTitle.innerText = "Mở Khóa Kho Game";
-        authSubtitle.innerText = "Nhập Mật khẩu / Mã PIN chủ để giải mã dữ liệu";
-        confirmContainer.classList.add('hidden');
-        submitBtnSpan.innerText = "MỞ KHÓA NGAY";
-      }
+    function initLockScreen() {
+      const savedHash = localStorage.getItem(HASH_KEY);
+      const isNew = !savedHash;
+      document.getElementById('lockScreenSubtext').innerText = isNew 
+        ? 'Thiết lập Mật khẩu tổng lần đầu để mã hóa kho dữ liệu' 
+        : 'Nhập Mật khẩu tổng để mở khóa kho dữ liệu';
+      document.getElementById('masterPassLabel').innerText = isNew ? 'Tạo mật khẩu tổng *' : 'Mật khẩu tổng *';
+      document.getElementById('confirmPassGroup').classList.toggle('hidden', !isNew);
+      document.getElementById('unlockBtnText').innerText = isNew ? 'Thiết Lập & Mở Kho' : 'Mở Khóa Kho';
     }
 
-    /**
-     * Handles Master Password Submission (Auth or Setup)
-     */
-    function handleAuthSubmit(e) {
+    // Xử lý đăng nhập / tạo mật khẩu
+    document.getElementById('masterPassForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      const pass = document.getElementById('master-password').value;
-      const confirmPass = document.getElementById('confirm-master-password').value;
-      const errBox = document.getElementById('auth-error');
-      const errMsg = document.getElementById('auth-error-msg');
-      const existingData = localStorage.getItem(STORAGE_KEY_CIPHER);
+      const pass = document.getElementById('masterPasswordInput').value;
+      const confirmPass = document.getElementById('confirmMasterPasswordInput').value;
+      const savedHash = localStorage.getItem(HASH_KEY);
+      const errorMsg = document.getElementById('lockErrorMsg');
 
-      errBox.classList.add('hidden');
-
-      if (!existingData) {
-        // Registration mode
-        if (pass.length < 4) {
-          showAuthError("Mật khẩu chủ nên có ít nhất 4 ký tự.");
+      if (!savedHash) {
+        if (pass.length < 6) {
+          showLockError('Mật khẩu tổng nên có ít nhất 6 ký tự!');
           return;
         }
         if (pass !== confirmPass) {
-          showAuthError("Mật khẩu xác nhận không khớp.");
+          showLockError('Xác nhận mật khẩu không khớp!');
           return;
         }
-
-        // Initialize empty array & sample welcome account
-        const initialList = [
-          {
-            id: 'demo_' + Date.now(),
-            game: 'Steam',
-            username: 'gamer_vietnam',
-            password: 'SuperSafeSteamPassword!2026',
-            server: 'Vietnam / SEA',
-            pin: '8492',
-            notes: 'Tài khoản mẫu được tạo tự động để hướng dẫn sử dụng.',
-            updatedAt: new Date().toISOString()
-          }
-        ];
-
+        const hash = CryptoJS.SHA256(pass).toString();
+        localStorage.setItem(HASH_KEY, hash);
         masterKey = pass;
-        saveAccountsToEncryptedStorage(initialList);
-        unlockVault(initialList);
-        showToast("Tạo kho bảo mật thành công!", "check-circle");
+        accounts = [];
+        saveToLocalStorage();
+        unlockVaultSuccess();
       } else {
-        // Unlock existing vault
-        try {
-          const decryptedBytes = CryptoJS.AES.decrypt(existingData, pass);
-          const decryptedString = decryptedBytes.toString(CryptoJS.enc.Utf8);
-
-          if (!decryptedString) {
-            throw new Error("Mật khẩu không khớp");
-          }
-
-          const parsedList = JSON.parse(decryptedString);
-          masterKey = pass;
-          unlockVault(parsedList);
-          showToast("Mở kho thành công!", "unlock");
-        } catch (err) {
-          showAuthError("Mật khẩu chủ không đúng! Vui lòng thử lại.");
+        const hash = CryptoJS.SHA256(pass).toString();
+        if (hash !== savedHash) {
+          showLockError('Sai Mật khẩu tổng! Vui lòng thử lại.');
+          return;
         }
+        masterKey = pass;
+        loadVaultData();
+        unlockVaultSuccess();
       }
+    });
+
+    function showLockError(msg) {
+      const el = document.getElementById('lockErrorMsg');
+      el.innerText = msg;
+      el.classList.remove('hidden');
     }
 
-    function showAuthError(msg) {
-      const errBox = document.getElementById('auth-error');
-      const errMsg = document.getElementById('auth-error-msg');
-      errMsg.innerText = msg;
-      errBox.classList.remove('hidden');
-    }
-
-    function unlockVault(accounts) {
-      decryptedAccounts = accounts || [];
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('vault-screen').classList.remove('hidden');
-      document.getElementById('nav-actions').classList.remove('hidden');
-      document.getElementById('master-password').value = '';
-      document.getElementById('confirm-master-password').value = '';
-      
-      startLockTimer();
-      renderAccountCards();
-      lucide.createIcons();
+    function unlockVaultSuccess() {
+      document.getElementById('lockScreen').classList.add('hidden');
+      document.getElementById('masterPasswordInput').value = '';
+      document.getElementById('confirmMasterPasswordInput').value = '';
+      document.getElementById('lockErrorMsg').classList.add('hidden');
+      updateGameFilterOptions();
+      renderAccounts();
+      showToast('Đã mở khóa thành công!');
     }
 
     function lockVault() {
       masterKey = null;
-      decryptedAccounts = [];
-      clearInterval(lockTimerInterval);
-      
-      document.getElementById('vault-screen').classList.add('hidden');
-      document.getElementById('nav-actions').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
-      
-      checkVaultStatus();
-      showToast("Kho đã được khóa an toàn", "lock");
-      lucide.createIcons();
+      accounts = [];
+      document.getElementById('lockScreen').classList.remove('hidden');
+      document.getElementById('accountsGrid').innerHTML = '';
+      initLockScreen();
+      showToast('Kho dữ liệu đã được khóa an toàn.');
     }
 
-    function startLockTimer() {
-      clearInterval(lockTimerInterval);
-      secondsLeftToLock = AUTO_LOCK_TIMEOUT_SECONDS;
-      updateTimerDisplay();
-
-      lockTimerInterval = setInterval(() => {
-        secondsLeftToLock--;
-        updateTimerDisplay();
-        if (secondsLeftToLock <= 0) {
-          lockVault();
-        }
-      }, 1000);
-    }
-
-    function resetActivityTimer() {
+    function resetInactivityTimer() {
+      if (autoLockTimer) clearTimeout(autoLockTimer);
       if (masterKey) {
-        secondsLeftToLock = AUTO_LOCK_TIMEOUT_SECONDS;
-        updateTimerDisplay();
+        autoLockTimer = setTimeout(() => {
+          lockVault();
+        }, AUTO_LOCK_MINUTES * 60 * 1000);
       }
     }
 
-    function updateTimerDisplay() {
-      const mins = Math.floor(secondsLeftToLock / 60);
-      const secs = secondsLeftToLock % 60;
-      const el = document.getElementById('lock-timer');
-      if (el) {
-        el.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-      }
-    }
-
-    function setupActivityListeners() {
-      ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'].forEach(evt => {
-        window.addEventListener(evt, resetActivityTimer, { passive: true });
-      });
-    }
-
-    function saveAccountsToEncryptedStorage(accountsArray) {
+    // Mã hóa và Giải mã AES
+    function saveToLocalStorage() {
       if (!masterKey) return;
-      const jsonString = JSON.stringify(accountsArray);
-      const encrypted = CryptoJS.AES.encrypt(jsonString, masterKey).toString();
-      localStorage.setItem(STORAGE_KEY_CIPHER, encrypted);
-      decryptedAccounts = accountsArray;
-      renderAccountCards();
+      const jsonStr = JSON.stringify(accounts);
+      const encrypted = CryptoJS.AES.encrypt(jsonStr, masterKey).toString();
+      localStorage.setItem(STORAGE_KEY, encrypted);
     }
 
-    function renderAccountCards() {
-      const grid = document.getElementById('accounts-grid');
-      const emptyState = document.getElementById('empty-state');
-      const counterEl = document.getElementById('account-counter');
-      const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
-      const filterGame = document.getElementById('game-filter').value;
+    function loadVaultData() {
+      const encrypted = localStorage.getItem(STORAGE_KEY);
+      if (!encrypted) {
+        accounts = [];
+        return;
+      }
+      try {
+        const decryptedBytes = CryptoJS.AES.decrypt(encrypted, masterKey);
+        const decryptedStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
+        accounts = decryptedStr ? JSON.parse(decryptedStr) : [];
+      } catch (err) {
+        showToast('Không thể giải mã dữ liệu!');
+        accounts = [];
+      }
+    }
 
-      counterEl.innerText = `${decryptedAccounts.length} tài khoản`;
+    // ==================== NHẬP TỪ FILE EXCEL (.xlsx, .xls, .csv) ====================
+    function handleExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-      // Filter logic
-      const filtered = decryptedAccounts.filter(item => {
-        const matchGame = filterGame === 'ALL' || item.game === filterGame || (filterGame === 'Khác' && !['Genshin Impact', 'Valorant', 'League of Legends', 'Steam', 'Epic Games', 'PlayStation', 'Xbox'].includes(item.game));
-        const matchSearch = item.game.toLowerCase().includes(searchVal) ||
-                            item.username.toLowerCase().includes(searchVal) ||
-                            (item.server && item.server.toLowerCase().includes(searchVal)) ||
-                            (item.notes && item.notes.toLowerCase().includes(searchVal));
-        return matchGame && matchSearch;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          
+          // Chuyển sheet sang dạng mảng 2 chiều để tự động dò dòng tiêu đề
+          const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+          if (!rows || rows.length === 0) {
+            showToast('File Excel trống!');
+            return;
+          }
+
+          // Dò tìm dòng tiêu đề chứa: "game name", "user", "password"
+          let headerRowIndex = -1;
+          let colMap = {
+            game: -1,
+            user: -1,
+            pass: -1,
+            email: -1,
+            phone: -1,
+            notes: -1
+          };
+
+          for (let r = 0; r < rows.length; r++) {
+            const row = rows[r].map(c => String(c).trim().toLowerCase());
+            const gIdx = row.findIndex(c => c.includes('game name') || c === 'game');
+            const uIdx = row.findIndex(c => c === 'user' || c.includes('username') || c.includes('tài khoản'));
+            const pIdx = row.findIndex(c => c.includes('password') || c === 'pass' || c.includes('mật khẩu'));
+
+            if (gIdx !== -1 && (uIdx !== -1 || pIdx !== -1)) {
+              headerRowIndex = r;
+              colMap.game = gIdx;
+              colMap.user = uIdx;
+              colMap.pass = pIdx;
+              colMap.email = row.findIndex(c => c.includes('email') || c.includes('mail'));
+              colMap.phone = row.findIndex(c => c.includes('phone') || c.includes('sđt') || c.includes('tel'));
+              colMap.notes = row.findIndex(c => c.includes('note') || c.includes('ghi chú'));
+              break;
+            }
+          }
+
+          if (headerRowIndex === -1) {
+            showToast('Không tìm thấy dòng tiêu đề Game Name / User / Password!');
+            return;
+          }
+
+          let importedCount = 0;
+          for (let r = headerRowIndex + 1; r < rows.length; r++) {
+            const row = rows[r];
+            if (!row || row.length === 0) continue;
+
+            const gameVal = colMap.game !== -1 ? String(row[colMap.game] || '').trim() : '';
+            const userVal = colMap.user !== -1 ? String(row[colMap.user] || '').trim() : '';
+            const passVal = colMap.pass !== -1 ? String(row[colMap.pass] || '').trim() : '';
+            const emailVal = colMap.email !== -1 ? String(row[colMap.email] || '').trim() : '';
+            const phoneVal = colMap.phone !== -1 ? String(row[colMap.phone] || '').trim() : '';
+            const notesVal = colMap.notes !== -1 ? String(row[colMap.notes] || '').trim() : '';
+
+            // Nếu dòng có ít nhất game name hoặc user thì tiến hành thêm
+            if (gameVal || userVal) {
+              accounts.push({
+                id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                game: gameVal || 'Game Khác',
+                user: userVal,
+                password: passVal,
+                email: emailVal,
+                phone: phoneVal,
+                notes: notesVal,
+                updatedAt: new Date().toISOString()
+              });
+              importedCount++;
+            }
+          }
+
+          if (importedCount > 0) {
+            saveToLocalStorage();
+            updateGameFilterOptions();
+            renderAccounts();
+            showToast(`Đã nhập thành công ${importedCount} tài khoản từ Excel!`);
+          } else {
+            showToast('Không tìm thấy bản ghi tài khoản nào sau dòng tiêu đề!');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Lỗi khi đọc file Excel: ' + err.message);
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ==================== RENDER DANH SÁCH ====================
+    function updateGameFilterOptions() {
+      const select = document.getElementById('gameFilterSelect');
+      const currentVal = select.value;
+      const games = [...new Set(accounts.map(a => a.game).filter(Boolean))].sort();
+
+      select.innerHTML = '<option value="ALL">Tất cả Game</option>';
+      games.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.innerText = g;
+        select.appendChild(opt);
+      });
+      select.value = currentVal;
+    }
+
+    function renderAccounts() {
+      const grid = document.getElementById('accountsGrid');
+      const emptyState = document.getElementById('emptyState');
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const filterGame = document.getElementById('gameFilterSelect').value;
+
+      const filtered = accounts.filter(acc => {
+        const matchGame = (filterGame === 'ALL') || (acc.game === filterGame);
+        const matchQuery = !query || 
+          (acc.game && acc.game.toLowerCase().includes(query)) ||
+          (acc.user && acc.user.toLowerCase().includes(query)) ||
+          (acc.email && acc.email.toLowerCase().includes(query)) ||
+          (acc.phone && acc.phone.toLowerCase().includes(query)) ||
+          (acc.notes && acc.notes.toLowerCase().includes(query));
+        return matchGame && matchQuery;
       });
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
         emptyState.classList.remove('hidden');
-        emptyState.classList.add('flex');
         return;
       }
 
       emptyState.classList.add('hidden');
-      emptyState.classList.remove('flex');
+      grid.innerHTML = filtered.map(acc => {
+        const safeGame = escapeHtml(acc.game);
+        const safeUser = escapeHtml(acc.user);
+        const safePass = escapeHtml(acc.password);
+        const safeEmail = escapeHtml(acc.email || '');
+        const safePhone = escapeHtml(acc.phone || '');
+        const safeNotes = escapeHtml(acc.notes || '');
 
-      grid.innerHTML = filtered.map(item => {
-        const gameColor = getGameBadgeColor(item.game);
         return `
-          <div class="bg-cyber-900/90 border border-cyber-700/80 hover:border-cyan-500/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 group relative">
+          <div class="bg-cyber-800 border border-slate-700/80 hover:border-cyan-500/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 neon-glow">
             <div>
-              <!-- Top Row: Game Badge & Options -->
-              <div class="flex items-center justify-between mb-3">
-                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider ${gameColor.bg} ${gameColor.text} border ${gameColor.border}">
-                  ${escapeHtml(item.game)}
-                </span>
-                <div class="flex items-center space-x-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                  <button onclick="editAccount('${item.id}')" class="p-1 text-gray-400 hover:text-cyan-400 rounded transition-colors" title="Chỉnh sửa">
-                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+              <div class="flex items-start justify-between gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xs">
+                    ${safeGame.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-base text-slate-100 font-gaming leading-tight">${safeGame}</h4>
+                    <span class="text-[11px] text-slate-400">ID: ${acc.id.slice(-6)}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button onclick="editAccount('${acc.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-400 rounded-lg hover:bg-slate-700/60 transition">
+                    <i data-lucide="edit-2" class="w-4 h-4"></i>
                   </button>
-                  <button onclick="deleteAccount('${item.id}')" class="p-1 text-gray-400 hover:text-rose-400 rounded transition-colors" title="Xóa tài khoản">
+                  <button onclick="deleteAccount('${acc.id}')" title="Xóa" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-700/60 transition">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                   </button>
                 </div>
               </div>
 
-              <!-- Username Field with Fast Copy -->
-              <div class="mb-2 bg-cyber-950/70 p-2.5 rounded-xl border border-cyber-800 flex items-center justify-between">
-                <div class="overflow-hidden mr-2">
-                  <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Tài khoản</p>
-                  <p class="text-xs font-mono-code text-white truncate font-medium">${escapeHtml(item.username)}</p>
+              <!-- Trường User -->
+              <div class="bg-cyber-900/90 rounded-xl p-2.5 border border-slate-700/60 mb-2 space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-400">Tài khoản:</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono text-cyan-300 font-medium select-all">${safeUser}</span>
+                    <button onclick="copyToClipboard('${safeUser}', 'Tài khoản')" title="Sao chép" class="text-slate-400 hover:text-white p-0.5">
+                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
                 </div>
-                <button onclick="copyToClipboard('${escapeAttr(item.username)}', 'Đã chép tài khoản')" class="p-1.5 text-gray-400 hover:text-cyan-400 transition-colors" title="Chép tài khoản">
-                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                </button>
+
+                <!-- Mật khẩu -->
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-400">Mật khẩu:</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="password" id="pass_field_${acc.id}" value="${safePass}" readonly
+                      class="bg-transparent text-right font-mono text-slate-200 focus:outline-none w-28 text-xs">
+                    <button onclick="toggleCardPass('${acc.id}')" title="Ẩn/Hiện" class="text-slate-400 hover:text-white p-0.5">
+                      <i data-lucide="eye" id="card_eye_${acc.id}" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="copyToClipboard('${safePass}', 'Mật khẩu')" title="Sao chép" class="text-slate-400 hover:text-white p-0.5">
+                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <!-- Password Field with View & Copy -->
-              <div class="mb-3 bg-cyber-950/70 p-2.5 rounded-xl border border-cyber-800 flex items-center justify-between">
-                <div class="overflow-hidden mr-2">
-                  <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Mật khẩu</p>
-                  <p id="pw-field-${item.id}" class="text-xs font-mono-code text-cyan-300 font-semibold truncate tracking-wider">••••••••••••</p>
-                </div>
-                <div class="flex items-center space-x-1">
-                  <button onclick="toggleCardPassword('${item.id}', '${escapeAttr(item.password)}')" class="p-1.5 text-gray-400 hover:text-white transition-colors" title="Hiện mật khẩu">
-                    <i id="pw-eye-${item.id}" data-lucide="eye" class="w-3.5 h-3.5"></i>
-                  </button>
-                  <button onclick="copyToClipboard('${escapeAttr(item.password)}', 'Đã chép mật khẩu')" class="p-1.5 text-gray-400 hover:text-cyan-400 transition-colors" title="Chép mật khẩu">
-                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Metadata: Server & 2FA Pin -->
-              ${(item.server || item.pin) ? `
-                <div class="grid grid-cols-2 gap-2 text-[11px] mb-3 font-mono">
-                  ${item.server ? `
-                    <div class="bg-cyber-950/40 px-2 py-1 rounded border border-cyber-800 truncate text-gray-400">
-                      <span class="text-gray-500 mr-1">SV:</span>${escapeHtml(item.server)}
-                    </div>
-                  ` : ''}
-                  ${item.pin ? `
-                    <div class="bg-cyber-950/40 px-2 py-1 rounded border border-cyber-800 truncate text-amber-300">
-                      <span class="text-gray-500 mr-1">PIN:</span>${escapeHtml(item.pin)}
-                    </div>
-                  ` : ''}
+              <!-- Chi tiết thêm: Email & Phone & Note -->
+              ${(safeEmail || safePhone || safeNotes) ? `
+                <div class="space-y-1 text-xs text-slate-400 pt-1">
+                  ${safeEmail ? `
+                    <div class="flex items-center justify-between">
+                      <span class="flex items-center gap-1 text-[11px] text-slate-400">
+                        <i data-lucide="mail" class="w-3 h-3 text-slate-500"></i> ${safeEmail}
+                      </span>
+                      <button onclick="copyToClipboard('${safeEmail}', 'Email')" class="hover:text-white"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                    </div>` : ''}
+                  ${safePhone ? `
+                    <div class="flex items-center justify-between">
+                      <span class="flex items-center gap-1 text-[11px] text-slate-400">
+                        <i data-lucide="phone" class="w-3 h-3 text-slate-500"></i> ${safePhone}
+                      </span>
+                      <button onclick="copyToClipboard('${safePhone}', 'Số điện thoại')" class="hover:text-white"><i data-lucide="copy" class="w-3 h-3"></i></button>
+                    </div>` : ''}
+                  ${safeNotes ? `
+                    <p class="text-[11px] text-slate-400 bg-slate-900/60 p-2 rounded-lg mt-1 border border-slate-800 line-clamp-2" title="${safeNotes}">
+                      ${safeNotes}
+                    </p>` : ''}
                 </div>
               ` : ''}
-
-              <!-- Notes -->
-              ${item.notes ? `
-                <p class="text-[11px] text-gray-400 bg-cyber-800/40 p-2 rounded-lg border border-cyber-700/50 mb-2 italic">
-                  ${escapeHtml(item.notes)}
-                </p>
-              ` : ''}
-            </div>
-
-            <!-- Footer Timestamp -->
-            <div class="pt-2 border-t border-cyber-800/80 flex items-center justify-between text-[10px] text-gray-500">
-              <span>Cập nhật:</span>
-              <span>${item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('vi-VN') : 'Mới'}</span>
             </div>
           </div>
         `;
@@ -747,396 +660,203 @@
       lucide.createIcons();
     }
 
-    function toggleCardPassword(id, rawPassword) {
-      const field = document.getElementById(`pw-field-${id}`);
-      const eyeIcon = document.getElementById(`pw-eye-${id}`);
-      const isMasked = field.innerText.includes('•');
-
-      if (isMasked) {
-        field.innerText = rawPassword;
-        field.classList.remove('tracking-wider');
-      } else {
-        field.innerText = '••••••••••••';
-        field.classList.add('tracking-wider');
-      }
-    }
-
-    function getGameBadgeColor(gameName) {
-      const g = (gameName || '').toLowerCase();
-      if (g.includes('genshin') || g.includes('honkai')) {
-        return { bg: 'bg-indigo-950/80', text: 'text-indigo-300', border: 'border-indigo-700/60' };
-      }
-      if (g.includes('valorant') || g.includes('cs')) {
-        return { bg: 'bg-rose-950/80', text: 'text-rose-300', border: 'border-rose-700/60' };
-      }
-      if (g.includes('steam')) {
-        return { bg: 'bg-sky-950/80', text: 'text-sky-300', border: 'border-sky-700/60' };
-      }
-      if (g.includes('epic')) {
-        return { bg: 'bg-zinc-800', text: 'text-zinc-200', border: 'border-zinc-600' };
-      }
-      if (g.includes('league') || g.includes('liên minh')) {
-        return { bg: 'bg-amber-950/80', text: 'text-amber-300', border: 'border-amber-700/60' };
-      }
-      return { bg: 'bg-cyan-950/80', text: 'text-cyan-300', border: 'border-cyan-700/60' };
-    }
-
-    function openAccountModal(accountId = null) {
-      const modal = document.getElementById('account-modal');
-      const title = document.getElementById('account-modal-title');
-      const form = document.getElementById('account-form');
+    // Modal & Thao tác tài khoản
+    function openModal(editId = null) {
+      const modal = document.getElementById('accountModal');
+      const title = document.getElementById('modalTitle');
+      const form = document.getElementById('accountForm');
       form.reset();
 
-      if (accountId) {
-        const item = decryptedAccounts.find(x => x.id === accountId);
+      if (editId) {
+        const item = accounts.find(a => a.id === editId);
         if (item) {
-          title.innerText = "Chỉnh Sửa Tài Khoản";
-          document.getElementById('account-id').value = item.id;
-          document.getElementById('acc-game-name').value = item.game;
-          document.getElementById('acc-username').value = item.username;
-          document.getElementById('acc-password').value = item.password;
-          document.getElementById('acc-server').value = item.server || '';
-          document.getElementById('acc-pin').value = item.pin || '';
-          document.getElementById('acc-notes').value = item.notes || '';
-          document.getElementById('acc-game-preset').value = ['Genshin Impact', 'Valorant', 'League of Legends', 'Steam', 'Epic Games'].includes(item.game) ? item.game : 'Khác';
+          title.innerHTML = '<i data-lucide="edit" class="w-5 h-5"></i> Cập Nhật Tài Khoản';
+          document.getElementById('editAccountId').value = item.id;
+          document.getElementById('accGame').value = item.game;
+          document.getElementById('accUser').value = item.user;
+          document.getElementById('accPass').value = item.password;
+          document.getElementById('accEmail').value = item.email || '';
+          document.getElementById('accPhone').value = item.phone || '';
+          document.getElementById('accNotes').value = item.notes || '';
         }
       } else {
-        title.innerText = "Thêm Tài Khoản Mới";
-        document.getElementById('account-id').value = '';
-        document.getElementById('acc-game-preset').value = 'Genshin Impact';
-        document.getElementById('acc-game-name').value = 'Genshin Impact';
+        title.innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5"></i> Thêm Tài Khoản Mới';
+        document.getElementById('editAccountId').value = '';
       }
-
       modal.classList.remove('hidden');
+      modal.classList.add('flex');
       lucide.createIcons();
     }
 
-    function closeAccountModal() {
-      document.getElementById('account-modal').classList.add('hidden');
+    function closeModal() {
+      const modal = document.getElementById('accountModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
 
-    function handleGameSelectChange(val) {
-      const input = document.getElementById('acc-game-name');
-      if (val !== 'Khác') {
-        input.value = val;
-      } else {
-        input.value = '';
-        input.focus();
-      }
-    }
-
-    function saveAccountForm(e) {
+    function saveAccount(e) {
       e.preventDefault();
-      const id = document.getElementById('account-id').value;
-      const game = document.getElementById('acc-game-name').value.trim();
-      const username = document.getElementById('acc-username').value.trim();
-      const password = document.getElementById('acc-password').value;
-      const server = document.getElementById('acc-server').value.trim();
-      const pin = document.getElementById('acc-pin').value.trim();
-      const notes = document.getElementById('acc-notes').value.trim();
+      const editId = document.getElementById('editAccountId').value;
+      const game = document.getElementById('accGame').value.trim();
+      const user = document.getElementById('accUser').value.trim();
+      const password = document.getElementById('accPass').value;
+      const email = document.getElementById('accEmail').value.trim();
+      const phone = document.getElementById('accPhone').value.trim();
+      const notes = document.getElementById('accNotes').value.trim();
 
-      if (!game || !username || !password) {
-        showToast("Vui lòng điền đủ trường bắt buộc", "alert-circle");
-        return;
-      }
-
-      let updatedList = [...decryptedAccounts];
-
-      if (id) {
-        // Edit existing
-        updatedList = updatedList.map(item => {
-          if (item.id === id) {
-            return {
-              ...item,
-              game,
-              username,
-              password,
-              server,
-              pin,
-              notes,
-              updatedAt: new Date().toISOString()
-            };
-          }
-          return item;
-        });
-        showToast("Cập nhật tài khoản thành công!", "check");
+      if (editId) {
+        const idx = accounts.findIndex(a => a.id === editId);
+        if (idx !== -1) {
+          accounts[idx] = { ...accounts[idx], game, user, password, email, phone, notes, updatedAt: new Date().toISOString() };
+          showToast('Đã cập nhật tài khoản!');
+        }
       } else {
-        // Add new
-        const newRecord = {
-          id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        accounts.unshift({
+          id: 'acc_' + Date.now(),
           game,
-          username,
+          user,
           password,
-          server,
-          pin,
+          email,
+          phone,
           notes,
           updatedAt: new Date().toISOString()
-        };
-        updatedList.unshift(newRecord);
-        showToast("Đã lưu tài khoản mới an toàn!", "shield-check");
+        });
+        showToast('Đã thêm tài khoản mới!');
       }
 
-      saveAccountsToEncryptedStorage(updatedList);
-      closeAccountModal();
+      saveToLocalStorage();
+      closeModal();
+      updateGameFilterOptions();
+      renderAccounts();
     }
 
     function editAccount(id) {
-      openAccountModal(id);
+      openModal(id);
     }
 
     function deleteAccount(id) {
-      const acc = decryptedAccounts.find(x => x.id === id);
-      const name = acc ? `${acc.game} (${acc.username})` : 'tài khoản này';
-      
-      // Inline confirmation toast or immediate delete with undo could work, but a modal/confirmation element is preferred
-      const confirmed = window.confirm(`Bạn có chắc chắn muốn xóa tài khoản ${name}?`);
-      if (confirmed) {
-        const nextList = decryptedAccounts.filter(x => x.id !== id);
-        saveAccountsToEncryptedStorage(nextList);
-        showToast("Đã xóa tài khoản", "trash-2");
+      if (confirm('Bạn có chắc chắn muốn xóa tài khoản này khỏi kho?')) {
+        accounts = accounts.filter(a => a.id !== id);
+        saveToLocalStorage();
+        updateGameFilterOptions();
+        renderAccounts();
+        showToast('Đã xóa tài khoản.');
       }
     }
 
-    function openPasswordGeneratorModal() {
-      document.getElementById('generator-modal').classList.remove('hidden');
-      generateCustomPassword();
-      lucide.createIcons();
-    }
-
-    function closePasswordGeneratorModal() {
-      document.getElementById('generator-modal').classList.add('hidden');
-    }
-
-    function updatePasswordLength(val) {
-      document.getElementById('gen-length-val').innerText = val;
-      generateCustomPassword();
-    }
-
-    function generateCustomPassword() {
-      const length = parseInt(document.getElementById('gen-length').value, 10);
-      const useUpper = document.getElementById('gen-opt-upper').checked;
-      const useLower = document.getElementById('gen-opt-lower').checked;
-      const useNum = document.getElementById('gen-opt-numbers').checked;
-      const useSym = document.getElementById('gen-opt-symbols').checked;
-
-      const upperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const lowerChars = 'abcdefghijklmnopqrstuvwxyz';
-      const numberChars = '0123456789';
-      const symbolChars = '!@#$%^&*()_+~|}{[]:;?><,.-=';
-
-      let pool = '';
-      if (useUpper) pool += upperChars;
-      if (useLower) pool += lowerChars;
-      if (useNum) pool += numberChars;
-      if (useSym) pool += symbolChars;
-
-      if (!pool) pool = lowerChars + numberChars;
-
-      let result = '';
-      const array = new Uint32Array(length);
-      window.crypto.getRandomValues(array);
-      for (let i = 0; i < length; i++) {
-        result += pool[array[i] % pool.length];
-      }
-
-      document.getElementById('gen-result').innerText = result;
-      assessPasswordStrength(result);
-    }
-
-    function assessPasswordStrength(pw) {
-      const bar = document.getElementById('gen-strength-bar');
-      const label = document.getElementById('gen-strength-label');
-      let score = 0;
-
-      if (pw.length >= 10) score++;
-      if (pw.length >= 14) score++;
-      if (/[A-Z]/.test(pw)) score++;
-      if (/[0-9]/.test(pw)) score++;
-      if (/[^A-Za-z0-9]/.test(pw)) score++;
-
-      if (score <= 2) {
-        bar.className = 'h-full bg-rose-500 w-1/3 transition-all duration-300';
-        label.innerText = 'Yếu';
-        label.className = 'text-rose-400 font-semibold';
-      } else if (score <= 4) {
-        bar.className = 'h-full bg-amber-400 w-2/3 transition-all duration-300';
-        label.innerText = 'Khá';
-        label.className = 'text-amber-400 font-semibold';
-      } else {
-        bar.className = 'h-full bg-emerald-400 w-full transition-all duration-300';
-        label.innerText = 'Rất Mạnh';
-        label.className = 'text-emerald-400 font-semibold';
-      }
-    }
-
-    function copyGeneratedPassword() {
-      const pw = document.getElementById('gen-result').innerText;
-      copyToClipboard(pw, "Đã sao chép mật khẩu mới!");
-    }
-
-    function applyPasswordToCurrentForm() {
-      const pw = document.getElementById('gen-result').innerText;
-      document.getElementById('acc-password').value = pw;
-      closePasswordGeneratorModal();
-      showToast("Đã chèn mật khẩu vào Form", "check");
-    }
-
-    function fillQuickRandomPassword() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';
-      let pw = '';
-      const array = new Uint32Array(16);
-      window.crypto.getRandomValues(array);
-      for (let i = 0; i < 16; i++) {
-        pw += chars[array[i] % chars.length];
-      }
-      document.getElementById('acc-password').value = pw;
-      showToast("Đã tạo mật khẩu ngẫu nhiên 16 ký tự", "sparkles");
-    }
-
-    function openBackupModal() {
-      document.getElementById('backup-modal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function closeBackupModal() {
-      document.getElementById('backup-modal').classList.add('hidden');
-    }
-
-    function exportVaultData() {
-      const rawEncrypted = localStorage.getItem(STORAGE_KEY_CIPHER);
-      if (!rawEncrypted) {
-        showToast("Không có dữ liệu để xuất!", "alert-circle");
-        return;
-      }
-
-      const backupObject = {
-        app: "GameAccountVault",
-        version: "1.0",
-        exportDate: new Date().toISOString(),
-        encryptedPayload: rawEncrypted
-      };
-
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObject, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `GameVault_Backup_${new Date().toISOString().slice(0, 10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-
-      showToast("Đã tải xuống file sao lưu mã hóa!", "download");
-    }
-
-    function handleFileImport(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (!parsed.encryptedPayload) {
-            throw new Error("Tệp sao lưu không đúng định dạng!");
-          }
-
-          // Test decryption with active master key
-          const bytes = CryptoJS.AES.decrypt(parsed.encryptedPayload, masterKey);
-          const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-
-          if (!decryptedText) {
-            throw new Error("Mật khẩu chủ hiện tại không khớp với file sao lưu!");
-          }
-
-          const importedAccounts = JSON.parse(decryptedText);
-          saveAccountsToEncryptedStorage(importedAccounts);
-          closeBackupModal();
-          showToast(`Khôi phục thành công ${importedAccounts.length} tài khoản!`, "check-circle");
-        } catch (err) {
-          showToast(err.message || "Lỗi khi nhập tệp!", "alert-circle");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function wipeAllVaultData() {
-      const ok = window.confirm("CẢNH BÁO: Hành động này sẽ xóa toàn bộ mật khẩu và tài khoản đã lưu trên trình duyệt này. Bạn có chắc chắn?");
-      if (ok) {
-        localStorage.removeItem(STORAGE_KEY_CIPHER);
-        closeBackupModal();
-        lockVault();
-        location.reload();
-      }
-    }
-
-    function copyToClipboard(text, successMsg = "Đã sao chép vào bộ nhớ đệm") {
-      try {
-        const dummy = document.createElement("textarea");
-        dummy.value = text;
-        dummy.style.position = "fixed";
-        dummy.style.opacity = "0";
-        document.body.appendChild(dummy);
-        dummy.select();
-        document.execCommand("copy");
-        document.body.removeChild(dummy);
-        showToast(successMsg, "copy");
-      } catch (err) {
-        showToast("Không thể sao chép tự động!", "alert-circle");
-      }
-    }
-
-    function togglePassVisibility(inputId, btn) {
-      const input = document.getElementById(inputId);
-      const icon = btn.querySelector('i');
+    // Các tiện ích
+    function toggleCardPass(id) {
+      const input = document.getElementById(`pass_field_${id}`);
+      const icon = document.getElementById(`card_eye_${id}`);
       if (input.type === 'password') {
         input.type = 'text';
-        btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+        icon.setAttribute('data-lucide', 'eye-off');
       } else {
         input.type = 'password';
-        btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+        icon.setAttribute('data-lucide', 'eye');
       }
       lucide.createIcons();
     }
 
-    function pasteToInput(inputId) {
-      // In iFrames navigator.clipboard.readText can be restricted, so we inform user
-      showToast("Sử dụng Ctrl + V để dán trực tiếp", "info");
-      document.getElementById(inputId).focus();
+    function togglePassVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
     }
 
-    function showToast(message, iconName = "check-circle") {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-msg');
-      const toastIcon = document.getElementById('toast-icon');
-
-      toastMsg.innerText = message;
-      toastIcon.setAttribute('data-lucide', iconName);
+    function generateRandomPass() {
+      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+      let res = "";
+      for (let i = 0; i < 16; i++) {
+        res += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      document.getElementById('accPass').value = res;
+      document.getElementById('accPass').type = 'text';
+      document.getElementById('modalEyeIcon').setAttribute('data-lucide', 'eye-off');
       lucide.createIcons();
+      showToast('Đã tạo mật khẩu ngẫu nhiên 16 ký tự');
+    }
 
+    function copyToClipboard(text, label) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`Đã sao chép ${label}!`);
+      }).catch(() => {
+        showToast('Lỗi khi sao chép!');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
       toast.classList.remove('translate-y-20', 'opacity-0');
       toast.classList.add('translate-y-0', 'opacity-100');
-
-      clearTimeout(toastTimeout);
-      toastTimeout = setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
+      setTimeout(() => {
         toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
       }, 2500);
     }
 
-    function escapeHtml(string) {
-      if (!string) return '';
-      return String(string)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    function toggleDataDropdown() {
+      const d = document.getElementById('dataDropdown');
+      d.classList.toggle('hidden');
     }
 
-    function escapeAttr(string) {
-      if (!string) return '';
-      return String(string)
-        .replace(/'/g, "\\'")
-        .replace(/"/g, '&quot;');
+    function exportData() {
+      if (accounts.length === 0) {
+        showToast('Kho dữ liệu đang trống!');
+        return;
+      }
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(accounts, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `game_vault_backup_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Đã xuất file JSON sao lưu!');
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported)) {
+            accounts = imported;
+            saveToLocalStorage();
+            updateGameFilterOptions();
+            renderAccounts();
+            showToast('Nhập dữ liệu thành công!');
+          } else {
+            showToast('Định dạng JSON không hợp lệ!');
+          }
+        } catch (err) {
+          showToast('Không thể đọc file JSON!');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function escapeHtml(string) {
+      return String(string || '').replace(/[&<>"']/g, function(s) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[s];
+      });
     }
   </script>
 </body>
