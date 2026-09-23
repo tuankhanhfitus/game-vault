@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Account Vault</title>
-  <!-- Tailwind CSS CDN -->
+  <title>Game Account Vault - Cloud Sync</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- CryptoJS for AES-256 Client-side Encryption -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
-  <!-- SheetJS (xlsx) for Excel Import -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+  <!-- Firebase SDKs (Compat version) -->
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -24,10 +26,7 @@
               700: '#1e293b',
               600: '#334155',
               neon: '#06b6d4',
-              accent: '#8b5cf6',
-              danger: '#f43f5e',
-              success: '#10b981',
-              warning: '#f59e0b'
+              accent: '#8b5cf6'
             }
           }
         }
@@ -36,493 +35,340 @@
   </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #090d16;
-      color: #f1f5f9;
-    }
-    .font-gaming {
-      font-family: 'Chakra Petch', sans-serif;
-    }
-    .neon-border {
-      border: 1px solid rgba(6, 182, 212, 0.4);
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
-    }
-    .neon-glow:hover {
-      box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #090d16;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #334155;
-      border-radius: 3px;
-    }
+    body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #f1f5f9; }
+    .font-gaming { font-family: 'Chakra Petch', sans-serif; }
+    .neon-glow:hover { box-shadow: 0 0 20px rgba(139, 92, 246, 0.35); }
   </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+<body class="min-h-screen flex flex-col antialiased">
 
-  <!-- ==================== MÀN HÌNH KHÓA / MASTER PASSWORD ==================== -->
+  <!-- MÀN HÌNH KHÓA & ĐỒNG BỘ ĐÁM MÂY -->
   <div id="lockScreen" class="fixed inset-0 z-50 bg-[#090d16] flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-cyber-800 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-cyan-500/10 rounded-full blur-2xl"></div>
-      <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-purple-500/10 rounded-full blur-2xl"></div>
-
-      <div class="text-center mb-6 relative">
+    <div class="w-full max-w-md bg-cyber-800 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl relative">
+      <div class="text-center mb-6">
         <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-          <i data-lucide="shield-check" class="w-9 h-9 text-white"></i>
+          <i data-lucide="cloud-lock" class="w-9 h-9 text-white"></i>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-bold font-gaming tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-purple-400">
-          GAME VAULT
+        <h1 class="text-2xl font-bold font-gaming tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+          GAME VAULT CLOUD
         </h1>
-        <p id="lockScreenSubtext" class="text-sm text-slate-400 mt-1">Kho lưu trữ tài khoản game bảo mật AES-256</p>
+        <p class="text-xs text-slate-400 mt-1">Đồng bộ đám mây kết hợp mã hóa AES-256</p>
       </div>
 
-      <form id="masterPassForm" class="space-y-4 relative">
+      <div class="flex border-b border-slate-700 mb-4 text-xs font-semibold">
+        <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-cyan-400 border-b-2 border-cyan-400">Đăng Nhập</button>
+        <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-slate-400 hover:text-white">Đăng Ký</button>
+      </div>
+
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3.5">
         <div>
-          <label id="masterPassLabel" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
-            Mật khẩu tổng (Master Password)
-          </label>
-          <div class="relative">
-            <input type="password" id="masterPasswordInput" required placeholder="••••••••••••"
-              class="w-full px-4 py-3 bg-cyber-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-mono text-sm">
-            <button type="button" onclick="togglePassVisibility('masterPasswordInput', 'masterEyeIcon')" class="absolute right-3 top-3.5 text-slate-400 hover:text-white">
-              <i data-lucide="eye" id="masterEyeIcon" class="w-5 h-5"></i>
-            </button>
-          </div>
+          <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Tài khoản Email</label>
+          <input type="email" id="cloudEmail" required placeholder="name@example.com"
+            class="w-full px-3.5 py-2.5 bg-cyber-900 border border-slate-700 rounded-xl text-white text-sm focus:border-cyan-500 focus:outline-none">
         </div>
 
-        <div id="confirmPassGroup" class="hidden">
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
-            Xác nhận mật khẩu tổng
-          </label>
-          <input type="password" id="confirmMasterPasswordInput" placeholder="••••••••••••"
-            class="w-full px-4 py-3 bg-cyber-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-mono text-sm">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Mật khẩu Firebase</label>
+          <input type="password" id="cloudPassword" required placeholder="Tối thiểu 6 ký tự"
+            class="w-full px-3.5 py-2.5 bg-cyber-900 border border-slate-700 rounded-xl text-white text-sm focus:border-cyan-500 focus:outline-none">
         </div>
 
-        <p id="lockErrorMsg" class="text-xs text-rose-400 font-medium hidden flex items-center gap-1.5"></p>
+        <div class="pt-2 border-t border-slate-700/60">
+          <label class="block text-xs font-semibold uppercase text-emerald-400 mb-1">
+            Master Password (Khóa giải mã AES) *
+          </label>
+          <input type="password" id="masterPasswordInput" required placeholder="Khóa bảo vệ kho dữ liệu"
+            class="w-full px-3.5 py-2.5 bg-cyber-900 border border-emerald-500/50 rounded-xl text-white text-sm focus:border-emerald-400 focus:outline-none">
+          <p class="text-[11px] text-slate-400 mt-1 leading-snug">Chỉ bạn biết mật khẩu này. Dữ liệu sẽ được mã hóa trên máy trước khi tải lên Firebase.</p>
+        </div>
 
-        <button type="submit" id="unlockBtn" class="w-full py-3.5 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 active:scale-[0.99]">
-          <i data-lucide="unlock" class="w-4 h-4"></i>
-          <span id="unlockBtnText">Mở Khóa Kho</span>
+        <p id="authErrorMsg" class="text-xs text-rose-400 hidden"></p>
+
+        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2">
+          <span>Đăng Nhập & Đồng Bộ</span>
         </button>
       </form>
     </div>
   </div>
 
-  <!-- ==================== GIAO DIỆN CHÍNH ==================== -->
+  <!-- THANH ĐIỀU HƯỚNG CHÍNH -->
   <header class="border-b border-slate-800 bg-cyber-800/80 backdrop-blur-md sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center">
           <i data-lucide="gamepad-2" class="w-6 h-6 text-white"></i>
         </div>
         <div>
           <span class="text-lg font-bold font-gaming text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 leading-none block">
             GAME VAULT
           </span>
-          <span class="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+          <span id="userStatusTag" class="text-[11px] text-emerald-400 flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            AES-256 Encrypted
+            Đồng bộ Cloud
           </span>
         </div>
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Nút nhập Excel -->
-        <label for="excelFileInput" title="Nhập danh sách từ Excel (.xlsx, .xls, .csv)"
-          class="cursor-pointer px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+        <label for="excelFileInput" class="cursor-pointer px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5">
           <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i>
           <span class="hidden sm:inline">Nhập Excel</span>
         </label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
 
-        <!-- Menu Công cụ dữ liệu -->
-        <button onclick="toggleDataDropdown()" class="px-2.5 sm:px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition">
-          <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i>
-          <span class="hidden md:inline">Dữ liệu</span>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
-        </button>
-
-        <div id="dataDropdown" class="hidden absolute right-16 top-14 w-48 bg-cyber-800 border border-slate-700 rounded-xl shadow-2xl py-1 z-40 text-xs">
-          <button onclick="exportData()" class="w-full px-4 py-2.5 text-left text-slate-300 hover:bg-slate-700 flex items-center gap-2">
-            <i data-lucide="download" class="w-3.5 h-3.5 text-cyan-400"></i> Xuất sao lưu (JSON)
-          </button>
-          <label for="importJsonInput" class="w-full px-4 py-2.5 text-left text-slate-300 hover:bg-slate-700 flex items-center gap-2 cursor-pointer">
-            <i data-lucide="upload" class="w-3.5 h-3.5 text-purple-400"></i> Nhập dữ liệu (JSON)
-          </label>
-          <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importData(event)">
-        </div>
-
-        <!-- Khóa kho -->
-        <button onclick="lockVault()" title="Khóa ngay lập tức"
-          class="px-2.5 sm:px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
-          <i data-lucide="lock" class="w-4 h-4"></i>
-          <span class="hidden sm:inline">Khóa</span>
+        <button onclick="lockVault()" class="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Đăng xuất</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- NỘI DUNG CHÍNH -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full space-y-6">
-
-    <!-- Thanh công cụ: Tìm kiếm, Lọc và Nút Thêm mới -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
     <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
       <div class="flex flex-1 flex-col sm:flex-row gap-2.5">
         <div class="relative flex-1">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
-          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm theo game, tài khoản, email, số ĐT..."
-            class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition">
+          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm theo game, user, email, SĐT..."
+            class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
         </div>
-        <select id="gameFilterSelect" onchange="renderAccounts()"
-          class="px-3.5 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-cyan-500 transition">
+        <select id="gameFilterSelect" onchange="renderAccounts()" class="px-3.5 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-300">
           <option value="ALL">Tất cả Game</option>
         </select>
       </div>
-
-      <div class="flex items-center gap-2">
-        <button onclick="openModal()" class="flex-1 sm:flex-initial px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 transition active:scale-95">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          <span>Thêm Tài Khoản</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Thông báo banner Excel -->
-    <div class="p-3 bg-cyan-950/40 border border-cyan-800/60 rounded-xl flex items-center justify-between text-xs text-cyan-200">
-      <div class="flex items-center gap-2">
-        <i data-lucide="info" class="w-4 h-4 text-cyan-400 shrink-0"></i>
-        <span>Hỗ trợ tải trực tiếp bảng Excel với các cột: <b>Game Name, User, Password, Email, Phone number, Notes</b></span>
-      </div>
-      <label for="excelFileInput" class="text-cyan-400 underline font-semibold cursor-pointer hover:text-cyan-300 ml-2 whitespace-nowrap">Chọn file</label>
-    </div>
-
-    <!-- Danh sách thẻ tài khoản -->
-    <div id="accountsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-      <!-- Dynamic render bằng Javascript -->
-    </div>
-
-    <!-- Trạng thái trống (Empty State) -->
-    <div id="emptyState" class="hidden text-center py-16 px-4">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-500">
-        <i data-lucide="inbox" class="w-8 h-8"></i>
-      </div>
-      <h3 class="text-lg font-semibold text-slate-300 font-gaming">Chưa có tài khoản nào</h3>
-      <p class="text-slate-500 text-sm max-w-sm mx-auto mt-1 mb-5">Bấm Thêm Tài Khoản hoặc Nhập file Excel để bắt đầu lưu trữ an toàn.</p>
-      <button onclick="openModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 rounded-xl text-sm font-medium inline-flex items-center gap-2">
-        <i data-lucide="plus" class="w-4 h-4"></i> Thêm tài khoản đầu tiên
+      <button onclick="openModal()" class="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span>Thêm Tài Khoản</span>
       </button>
+    </div>
+
+    <div id="accountsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+    <div id="emptyState" class="hidden text-center py-16">
+      <i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-500 mb-3"></i>
+      <h3 class="text-base font-semibold text-slate-300">Chưa có tài khoản nào trên đám mây</h3>
+      <p class="text-xs text-slate-500 mt-1 mb-4">Hãy tải file Excel hoặc bấm Thêm Tài Khoản để đồng bộ ngay.</p>
     </div>
   </main>
 
-  <!-- ==================== MODAL THÊM / SỬA TÀI KHOẢN ==================== -->
-  <div id="accountModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-    <div class="w-full max-w-lg bg-cyber-800 border border-slate-700 rounded-2xl p-6 shadow-2xl relative my-8">
-      <div class="flex items-center justify-between border-b border-slate-700/80 pb-3 mb-4">
-        <h3 id="modalTitle" class="text-lg font-bold font-gaming text-cyan-400 flex items-center gap-2">
-          <i data-lucide="gamepad" class="w-5 h-5"></i> Thêm Tài Khoản Mới
-        </h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+  <!-- MODAL THÊM / SỬA -->
+  <div id="accountModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="w-full max-w-lg bg-cyber-800 border border-slate-700 rounded-2xl p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
+        <h3 id="modalTitle" class="text-lg font-bold font-gaming text-cyan-400">Thêm Tài Khoản</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="accountForm" onsubmit="saveAccount(event)" class="space-y-3.5">
+      <form onsubmit="saveAccount(event)" class="space-y-3">
         <input type="hidden" id="editAccountId">
-
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Game / Nền tảng *</label>
-            <input type="text" id="accGame" required placeholder="VD: Genshin Impact, Steam, Valorant"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Game *</label>
+            <input type="text" id="accGame" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Tên tài khoản / User *</label>
-            <input type="text" id="accUser" required placeholder="Username / Tên đăng nhập"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">User *</label>
+            <input type="text" id="accUser" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-medium text-slate-300">Mật khẩu *</label>
-            <button type="button" onclick="generateRandomPass()" class="text-[11px] text-cyan-400 hover:underline flex items-center gap-1">
-              <i data-lucide="refresh-cw" class="w-3 h-3"></i> Tạo mật khẩu mạnh
-            </button>
-          </div>
-          <div class="relative">
-            <input type="password" id="accPass" required placeholder="Mật khẩu"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white font-mono focus:outline-none focus:border-cyan-500 pr-10">
-            <button type="button" onclick="togglePassVisibility('accPass', 'modalEyeIcon')" class="absolute right-3 top-2.5 text-slate-400 hover:text-white">
-              <i data-lucide="eye" id="modalEyeIcon" class="w-4 h-4"></i>
-            </button>
-          </div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Mật khẩu *</label>
+          <input type="text" id="accPass" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm font-mono text-white focus:border-cyan-500">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Email liên kết</label>
-            <input type="text" id="accEmail" placeholder="example@gmail.com"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Email</label>
+            <input type="text" id="accEmail" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1">Số điện thoại</label>
-            <input type="text" id="accPhone" placeholder="09xxxxxxxx"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500">
+            <input type="text" id="accPhone" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (Server, tướng, rank, câu hỏi bảo mật...)</label>
-          <textarea id="accNotes" rows="2" placeholder="Server Asia, AR 60..."
-            class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500 resize-none"></textarea>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú</label>
+          <textarea id="accNotes" rows="2" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500"></textarea>
         </div>
 
-        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-700/80">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm">
-            Hủy
-          </button>
-          <button type="submit" class="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm transition">
-            Lưu Tài Khoản
-          </button>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm">Hủy</button>
+          <button type="submit" class="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm">Lưu & Đẩy Lên Cloud</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- TOAST THÔNG BÁO -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-cyber-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 text-sm pointer-events-none">
-    <i data-lucide="check-circle" id="toastIcon" class="w-4 h-4 text-emerald-400"></i>
-    <span id="toastMsg">Thao tác thành công</span>
+  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-cyber-700 border border-slate-600 text-white px-4 py-2 rounded-xl text-sm transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <span id="toastMsg">Thành công</span>
   </div>
 
-  <!-- ==================== LOGIC JAVASCRIPT ==================== -->
   <script>
-    const STORAGE_KEY = 'GAME_VAULT_ENCRYPTED_DATA_V2';
-    const HASH_KEY = 'GAME_VAULT_HASH_V2';
+    // ========================================================
+    // CẤU HÌNH FIREBASE TỰ ĐỘNG ĐƯỢC ĐIỀN CHÍNH XÁC:
+    // ========================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyCE96cqlhrxIdRFLGFbcOnFpeH0wVob8TU",
+      authDomain: "game-vault-cloud-e29eb.firebaseapp.com",
+      projectId: "game-vault-cloud-e29eb",
+      storageBucket: "game-vault-cloud-e29eb.firebasestorage.app",
+      messagingSenderId: "838807435904",
+      appId: "1:838807435904:web:42c8b91fc76bea46eb8465"
+    };
 
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let currentUser = null;
     let masterKey = null;
     let accounts = [];
-    let autoLockTimer = null;
-    const AUTO_LOCK_MINUTES = 10;
+    let isRegisterMode = false;
 
-    // Khởi động
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      initLockScreen();
-      resetInactivityTimer();
-      window.addEventListener('mousemove', resetInactivityTimer);
-      window.addEventListener('keydown', resetInactivityTimer);
-      window.addEventListener('click', (e) => {
-        if (!e.target.closest('#dataDropdown') && !e.target.closest('button[onclick="toggleDataDropdown()"]')) {
-          document.getElementById('dataDropdown').classList.add('hidden');
-        }
-      });
     });
 
-    function initLockScreen() {
-      const savedHash = localStorage.getItem(HASH_KEY);
-      const isNew = !savedHash;
-      document.getElementById('lockScreenSubtext').innerText = isNew 
-        ? 'Thiết lập Mật khẩu tổng lần đầu để mã hóa kho dữ liệu' 
-        : 'Nhập Mật khẩu tổng để mở khóa kho dữ liệu';
-      document.getElementById('masterPassLabel').innerText = isNew ? 'Tạo mật khẩu tổng *' : 'Mật khẩu tổng *';
-      document.getElementById('confirmPassGroup').classList.toggle('hidden', !isNew);
-      document.getElementById('unlockBtnText').innerText = isNew ? 'Thiết Lập & Mở Kho' : 'Mở Khóa Kho';
+    function switchAuthTab(mode) {
+      isRegisterMode = (mode === 'register');
+      document.getElementById('tabLoginBtn').className = isRegisterMode ? 'flex-1 py-2 text-slate-400' : 'flex-1 py-2 text-cyan-400 border-b-2 border-cyan-400';
+      document.getElementById('tabRegisterBtn').className = !isRegisterMode ? 'flex-1 py-2 text-slate-400' : 'flex-1 py-2 text-cyan-400 border-b-2 border-cyan-400';
+      document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'Đăng Ký Tài Khoản Mới' : 'Đăng Nhập & Đồng Bộ';
+      document.getElementById('authErrorMsg').classList.add('hidden');
     }
 
-    // Xử lý đăng nhập / tạo mật khẩu
-    document.getElementById('masterPassForm').addEventListener('submit', (e) => {
+    async function handleAuthSubmit(e) {
       e.preventDefault();
-      const pass = document.getElementById('masterPasswordInput').value;
-      const confirmPass = document.getElementById('confirmMasterPasswordInput').value;
-      const savedHash = localStorage.getItem(HASH_KEY);
-      const errorMsg = document.getElementById('lockErrorMsg');
+      const email = document.getElementById('cloudEmail').value.trim();
+      const password = document.getElementById('cloudPassword').value;
+      const masterPass = document.getElementById('masterPasswordInput').value;
+      const errorEl = document.getElementById('authErrorMsg');
 
-      if (!savedHash) {
-        if (pass.length < 6) {
-          showLockError('Mật khẩu tổng nên có ít nhất 6 ký tự!');
-          return;
+      try {
+        errorEl.classList.add('hidden');
+        if (isRegisterMode) {
+          const res = await auth.createUserWithEmailAndPassword(email, password);
+          currentUser = res.user;
+        } else {
+          const res = await auth.signInWithEmailAndPassword(email, password);
+          currentUser = res.user;
         }
-        if (pass !== confirmPass) {
-          showLockError('Xác nhận mật khẩu không khớp!');
-          return;
-        }
-        const hash = CryptoJS.SHA256(pass).toString();
-        localStorage.setItem(HASH_KEY, hash);
-        masterKey = pass;
-        accounts = [];
-        saveToLocalStorage();
-        unlockVaultSuccess();
-      } else {
-        const hash = CryptoJS.SHA256(pass).toString();
-        if (hash !== savedHash) {
-          showLockError('Sai Mật khẩu tổng! Vui lòng thử lại.');
-          return;
-        }
-        masterKey = pass;
-        loadVaultData();
-        unlockVaultSuccess();
+        masterKey = masterPass;
+        await syncFromCloud();
+        document.getElementById('lockScreen').classList.add('hidden');
+        showToast('Đã kết nối và đồng bộ đám mây!');
+      } catch (err) {
+        errorEl.innerText = err.message;
+        errorEl.classList.remove('hidden');
       }
-    });
-
-    function showLockError(msg) {
-      const el = document.getElementById('lockErrorMsg');
-      el.innerText = msg;
-      el.classList.remove('hidden');
     }
 
-    function unlockVaultSuccess() {
-      document.getElementById('lockScreen').classList.add('hidden');
-      document.getElementById('masterPasswordInput').value = '';
-      document.getElementById('confirmMasterPasswordInput').value = '';
-      document.getElementById('lockErrorMsg').classList.add('hidden');
-      updateGameFilterOptions();
+    async function syncFromCloud() {
+      if (!currentUser || !masterKey) return;
+      const docRef = db.collection('vaults').doc(currentUser.uid);
+      const docSnap = await docRef.get();
+
+      if (docSnap.exists) {
+        const encrypted = docSnap.data().payload;
+        try {
+          const bytes = CryptoJS.AES.decrypt(encrypted, masterKey);
+          const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+          if (!decrypted) throw new Error();
+          accounts = JSON.parse(decrypted);
+        } catch (e) {
+          alert('Sai Master Password! Không thể giải mã dữ liệu.');
+          accounts = [];
+        }
+      } else {
+        accounts = [];
+      }
+      updateGameFilter();
       renderAccounts();
-      showToast('Đã mở khóa thành công!');
+    }
+
+    async function pushToCloud() {
+      if (!currentUser || !masterKey) return;
+      const jsonStr = JSON.stringify(accounts);
+      const encrypted = CryptoJS.AES.encrypt(jsonStr, masterKey).toString();
+
+      await db.collection('vaults').doc(currentUser.uid).set({
+        payload: encrypted,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
     }
 
     function lockVault() {
+      auth.signOut();
+      currentUser = null;
       masterKey = null;
       accounts = [];
-      document.getElementById('lockScreen').classList.remove('hidden');
       document.getElementById('accountsGrid').innerHTML = '';
-      initLockScreen();
-      showToast('Kho dữ liệu đã được khóa an toàn.');
+      document.getElementById('lockScreen').classList.remove('hidden');
+      showToast('Đã đăng xuất.');
     }
 
-    function resetInactivityTimer() {
-      if (autoLockTimer) clearTimeout(autoLockTimer);
-      if (masterKey) {
-        autoLockTimer = setTimeout(() => {
-          lockVault();
-        }, AUTO_LOCK_MINUTES * 60 * 1000);
-      }
-    }
-
-    // Mã hóa và Giải mã AES
-    function saveToLocalStorage() {
-      if (!masterKey) return;
-      const jsonStr = JSON.stringify(accounts);
-      const encrypted = CryptoJS.AES.encrypt(jsonStr, masterKey).toString();
-      localStorage.setItem(STORAGE_KEY, encrypted);
-    }
-
-    function loadVaultData() {
-      const encrypted = localStorage.getItem(STORAGE_KEY);
-      if (!encrypted) {
-        accounts = [];
-        return;
-      }
-      try {
-        const decryptedBytes = CryptoJS.AES.decrypt(encrypted, masterKey);
-        const decryptedStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
-        accounts = decryptedStr ? JSON.parse(decryptedStr) : [];
-      } catch (err) {
-        showToast('Không thể giải mã dữ liệu!');
-        accounts = [];
-      }
-    }
-
-    // ==================== NHẬP TỪ FILE EXCEL (.xlsx, .xls, .csv) ====================
     function handleExcelUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = async function(e) {
         try {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-          
-          // Chuyển sheet sang dạng mảng 2 chiều để tự động dò dòng tiêu đề
-          const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
 
-          if (!rows || rows.length === 0) {
-            showToast('File Excel trống!');
-            return;
-          }
-
-          // Dò tìm dòng tiêu đề chứa: "game name", "user", "password"
-          let headerRowIndex = -1;
-          let colMap = {
-            game: -1,
-            user: -1,
-            pass: -1,
-            email: -1,
-            phone: -1,
-            notes: -1
-          };
-
+          let headerIdx = -1, col = { g: -1, u: -1, p: -1, e: -1, ph: -1, n: -1 };
           for (let r = 0; r < rows.length; r++) {
             const row = rows[r].map(c => String(c).trim().toLowerCase());
-            const gIdx = row.findIndex(c => c.includes('game name') || c === 'game');
-            const uIdx = row.findIndex(c => c === 'user' || c.includes('username') || c.includes('tài khoản'));
-            const pIdx = row.findIndex(c => c.includes('password') || c === 'pass' || c.includes('mật khẩu'));
-
-            if (gIdx !== -1 && (uIdx !== -1 || pIdx !== -1)) {
-              headerRowIndex = r;
-              colMap.game = gIdx;
-              colMap.user = uIdx;
-              colMap.pass = pIdx;
-              colMap.email = row.findIndex(c => c.includes('email') || c.includes('mail'));
-              colMap.phone = row.findIndex(c => c.includes('phone') || c.includes('sđt') || c.includes('tel'));
-              colMap.notes = row.findIndex(c => c.includes('note') || c.includes('ghi chú'));
+            const g = row.findIndex(c => c.includes('game'));
+            const u = row.findIndex(c => c.includes('user'));
+            const p = row.findIndex(c => c.includes('pass'));
+            if (g !== -1 && (u !== -1 || p !== -1)) {
+              headerIdx = r;
+              col.g = g; col.u = u; col.p = p;
+              col.e = row.findIndex(c => c.includes('email') || c.includes('mail'));
+              col.ph = row.findIndex(c => c.includes('phone') || c.includes('sđt'));
+              col.n = row.findIndex(c => c.includes('note') || c.includes('ghi'));
               break;
             }
           }
 
-          if (headerRowIndex === -1) {
-            showToast('Không tìm thấy dòng tiêu đề Game Name / User / Password!');
+          if (headerIdx === -1) {
+            showToast('Không tìm thấy cột Game Name / User / Password!');
             return;
           }
 
-          let importedCount = 0;
-          for (let r = headerRowIndex + 1; r < rows.length; r++) {
+          let added = 0;
+          for (let r = headerIdx + 1; r < rows.length; r++) {
             const row = rows[r];
-            if (!row || row.length === 0) continue;
-
-            const gameVal = colMap.game !== -1 ? String(row[colMap.game] || '').trim() : '';
-            const userVal = colMap.user !== -1 ? String(row[colMap.user] || '').trim() : '';
-            const passVal = colMap.pass !== -1 ? String(row[colMap.pass] || '').trim() : '';
-            const emailVal = colMap.email !== -1 ? String(row[colMap.email] || '').trim() : '';
-            const phoneVal = colMap.phone !== -1 ? String(row[colMap.phone] || '').trim() : '';
-            const notesVal = colMap.notes !== -1 ? String(row[colMap.notes] || '').trim() : '';
-
-            // Nếu dòng có ít nhất game name hoặc user thì tiến hành thêm
-            if (gameVal || userVal) {
+            const game = col.g !== -1 ? String(row[col.g] || '').trim() : '';
+            const user = col.u !== -1 ? String(row[col.u] || '').trim() : '';
+            if (game || user) {
               accounts.push({
-                id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-                game: gameVal || 'Game Khác',
-                user: userVal,
-                password: passVal,
-                email: emailVal,
-                phone: phoneVal,
-                notes: notesVal,
-                updatedAt: new Date().toISOString()
+                id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                game: game || 'Khác',
+                user: user,
+                password: col.p !== -1 ? String(row[col.p] || '').trim() : '',
+                email: col.e !== -1 ? String(row[col.e] || '').trim() : '',
+                phone: col.ph !== -1 ? String(row[col.ph] || '').trim() : '',
+                notes: col.n !== -1 ? String(row[col.n] || '').trim() : ''
               });
-              importedCount++;
+              added++;
             }
           }
 
-          if (importedCount > 0) {
-            saveToLocalStorage();
-            updateGameFilterOptions();
+          if (added > 0) {
+            await pushToCloud();
+            updateGameFilter();
             renderAccounts();
-            showToast(`Đã nhập thành công ${importedCount} tài khoản từ Excel!`);
-          } else {
-            showToast('Không tìm thấy bản ghi tài khoản nào sau dòng tiêu đề!');
+            showToast(`Đã tải lên đám mây ${added} tài khoản!`);
           }
         } catch (err) {
-          console.error(err);
-          showToast('Lỗi khi đọc file Excel: ' + err.message);
+          showToast('Lỗi đọc Excel: ' + err.message);
         } finally {
           event.target.value = '';
         }
@@ -530,333 +376,136 @@
       reader.readAsArrayBuffer(file);
     }
 
-    // ==================== RENDER DANH SÁCH ====================
-    function updateGameFilterOptions() {
+    function updateGameFilter() {
       const select = document.getElementById('gameFilterSelect');
-      const currentVal = select.value;
+      const val = select.value;
       const games = [...new Set(accounts.map(a => a.game).filter(Boolean))].sort();
-
       select.innerHTML = '<option value="ALL">Tất cả Game</option>';
       games.forEach(g => {
         const opt = document.createElement('option');
-        opt.value = g;
-        opt.innerText = g;
+        opt.value = g; opt.innerText = g;
         select.appendChild(opt);
       });
-      select.value = currentVal;
+      select.value = val;
     }
 
     function renderAccounts() {
       const grid = document.getElementById('accountsGrid');
-      const emptyState = document.getElementById('emptyState');
-      const query = document.getElementById('searchInput').value.toLowerCase().trim();
-      const filterGame = document.getElementById('gameFilterSelect').value;
+      const empty = document.getElementById('emptyState');
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const fg = document.getElementById('gameFilterSelect').value;
 
-      const filtered = accounts.filter(acc => {
-        const matchGame = (filterGame === 'ALL') || (acc.game === filterGame);
-        const matchQuery = !query || 
-          (acc.game && acc.game.toLowerCase().includes(query)) ||
-          (acc.user && acc.user.toLowerCase().includes(query)) ||
-          (acc.email && acc.email.toLowerCase().includes(query)) ||
-          (acc.phone && acc.phone.toLowerCase().includes(query)) ||
-          (acc.notes && acc.notes.toLowerCase().includes(query));
-        return matchGame && matchQuery;
+      const filtered = accounts.filter(a => {
+        const mg = (fg === 'ALL') || (a.game === fg);
+        const mq = !q || a.game.toLowerCase().includes(q) || a.user.toLowerCase().includes(q) || (a.email && a.email.toLowerCase().includes(q));
+        return mg && mq;
       });
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
-        emptyState.classList.remove('hidden');
+        empty.classList.remove('hidden');
         return;
       }
 
-      emptyState.classList.add('hidden');
-      grid.innerHTML = filtered.map(acc => {
-        const safeGame = escapeHtml(acc.game);
-        const safeUser = escapeHtml(acc.user);
-        const safePass = escapeHtml(acc.password);
-        const safeEmail = escapeHtml(acc.email || '');
-        const safePhone = escapeHtml(acc.phone || '');
-        const safeNotes = escapeHtml(acc.notes || '');
-
-        return `
-          <div class="bg-cyber-800 border border-slate-700/80 hover:border-cyan-500/50 rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 neon-glow">
-            <div>
-              <div class="flex items-start justify-between gap-2 mb-3">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-lg bg-cyan-950 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xs">
-                    ${safeGame.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h4 class="font-bold text-base text-slate-100 font-gaming leading-tight">${safeGame}</h4>
-                    <span class="text-[11px] text-slate-400">ID: ${acc.id.slice(-6)}</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-1">
-                  <button onclick="editAccount('${acc.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-400 rounded-lg hover:bg-slate-700/60 transition">
-                    <i data-lucide="edit-2" class="w-4 h-4"></i>
-                  </button>
-                  <button onclick="deleteAccount('${acc.id}')" title="Xóa" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-700/60 transition">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                </div>
+      empty.classList.add('hidden');
+      grid.innerHTML = filtered.map(a => `
+        <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between neon-glow">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-bold text-base text-cyan-400 font-gaming">${a.game}</span>
+              <div class="flex gap-1">
+                <button onclick="editAccount('${a.id}')" class="p-1 text-slate-400 hover:text-cyan-300"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                <button onclick="deleteAccount('${a.id}')" class="p-1 text-slate-400 hover:text-rose-400"><i data-lucide="trash" class="w-4 h-4"></i></button>
               </div>
-
-              <!-- Trường User -->
-              <div class="bg-cyber-900/90 rounded-xl p-2.5 border border-slate-700/60 mb-2 space-y-1.5">
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-slate-400">Tài khoản:</span>
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-mono text-cyan-300 font-medium select-all">${safeUser}</span>
-                    <button onclick="copyToClipboard('${safeUser}', 'Tài khoản')" title="Sao chép" class="text-slate-400 hover:text-white p-0.5">
-                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Mật khẩu -->
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-slate-400">Mật khẩu:</span>
-                  <div class="flex items-center gap-1.5">
-                    <input type="password" id="pass_field_${acc.id}" value="${safePass}" readonly
-                      class="bg-transparent text-right font-mono text-slate-200 focus:outline-none w-28 text-xs">
-                    <button onclick="toggleCardPass('${acc.id}')" title="Ẩn/Hiện" class="text-slate-400 hover:text-white p-0.5">
-                      <i data-lucide="eye" id="card_eye_${acc.id}" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button onclick="copyToClipboard('${safePass}', 'Mật khẩu')" title="Sao chép" class="text-slate-400 hover:text-white p-0.5">
-                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Chi tiết thêm: Email & Phone & Note -->
-              ${(safeEmail || safePhone || safeNotes) ? `
-                <div class="space-y-1 text-xs text-slate-400 pt-1">
-                  ${safeEmail ? `
-                    <div class="flex items-center justify-between">
-                      <span class="flex items-center gap-1 text-[11px] text-slate-400">
-                        <i data-lucide="mail" class="w-3 h-3 text-slate-500"></i> ${safeEmail}
-                      </span>
-                      <button onclick="copyToClipboard('${safeEmail}', 'Email')" class="hover:text-white"><i data-lucide="copy" class="w-3 h-3"></i></button>
-                    </div>` : ''}
-                  ${safePhone ? `
-                    <div class="flex items-center justify-between">
-                      <span class="flex items-center gap-1 text-[11px] text-slate-400">
-                        <i data-lucide="phone" class="w-3 h-3 text-slate-500"></i> ${safePhone}
-                      </span>
-                      <button onclick="copyToClipboard('${safePhone}', 'Số điện thoại')" class="hover:text-white"><i data-lucide="copy" class="w-3 h-3"></i></button>
-                    </div>` : ''}
-                  ${safeNotes ? `
-                    <p class="text-[11px] text-slate-400 bg-slate-900/60 p-2 rounded-lg mt-1 border border-slate-800 line-clamp-2" title="${safeNotes}">
-                      ${safeNotes}
-                    </p>` : ''}
-                </div>
-              ` : ''}
             </div>
+            <div class="bg-cyber-900 p-2.5 rounded-xl border border-slate-800 text-xs space-y-1">
+              <div class="flex justify-between">
+                <span class="text-slate-400">User:</span>
+                <span class="font-mono text-slate-200 select-all">${a.user}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Pass:</span>
+                <span class="font-mono text-cyan-300 select-all">${a.password}</span>
+              </div>
+              ${a.email ? `<div class="flex justify-between"><span class="text-slate-400">Mail:</span><span class="text-slate-300 select-all">${a.email}</span></div>` : ''}
+              ${a.phone ? `<div class="flex justify-between"><span class="text-slate-400">SĐT:</span><span class="text-slate-300 select-all">${a.phone}</span></div>` : ''}
+            </div>
+            ${a.notes ? `<p class="text-[11px] text-slate-400 mt-2 bg-slate-900/40 p-1.5 rounded border border-slate-800">${a.notes}</p>` : ''}
           </div>
-        `;
-      }).join('');
-
+        </div>
+      `).join('');
       lucide.createIcons();
     }
 
-    // Modal & Thao tác tài khoản
     function openModal(editId = null) {
-      const modal = document.getElementById('accountModal');
-      const title = document.getElementById('modalTitle');
-      const form = document.getElementById('accountForm');
-      form.reset();
-
+      document.getElementById('editAccountId').value = editId || '';
+      document.getElementById('modalTitle').innerText = editId ? 'Cập Nhật Tài Khoản' : 'Thêm Tài Khoản';
       if (editId) {
         const item = accounts.find(a => a.id === editId);
-        if (item) {
-          title.innerHTML = '<i data-lucide="edit" class="w-5 h-5"></i> Cập Nhật Tài Khoản';
-          document.getElementById('editAccountId').value = item.id;
-          document.getElementById('accGame').value = item.game;
-          document.getElementById('accUser').value = item.user;
-          document.getElementById('accPass').value = item.password;
-          document.getElementById('accEmail').value = item.email || '';
-          document.getElementById('accPhone').value = item.phone || '';
-          document.getElementById('accNotes').value = item.notes || '';
-        }
+        document.getElementById('accGame').value = item.game;
+        document.getElementById('accUser').value = item.user;
+        document.getElementById('accPass').value = item.password;
+        document.getElementById('accEmail').value = item.email || '';
+        document.getElementById('accPhone').value = item.phone || '';
+        document.getElementById('accNotes').value = item.notes || '';
       } else {
-        title.innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5"></i> Thêm Tài Khoản Mới';
-        document.getElementById('editAccountId').value = '';
+        document.getElementById('accGame').value = '';
+        document.getElementById('accUser').value = '';
+        document.getElementById('accPass').value = '';
+        document.getElementById('accEmail').value = '';
+        document.getElementById('accPhone').value = '';
+        document.getElementById('accNotes').value = '';
       }
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      lucide.createIcons();
+      document.getElementById('accountModal').classList.remove('hidden');
+      document.getElementById('accountModal').classList.add('flex');
     }
 
     function closeModal() {
-      const modal = document.getElementById('accountModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      document.getElementById('accountModal').classList.add('hidden');
+      document.getElementById('accountModal').classList.remove('flex');
     }
 
-    function saveAccount(e) {
+    async function saveAccount(e) {
       e.preventDefault();
-      const editId = document.getElementById('editAccountId').value;
-      const game = document.getElementById('accGame').value.trim();
-      const user = document.getElementById('accUser').value.trim();
-      const password = document.getElementById('accPass').value;
-      const email = document.getElementById('accEmail').value.trim();
-      const phone = document.getElementById('accPhone').value.trim();
-      const notes = document.getElementById('accNotes').value.trim();
+      const id = document.getElementById('editAccountId').value;
+      const data = {
+        game: document.getElementById('accGame').value.trim(),
+        user: document.getElementById('accUser').value.trim(),
+        password: document.getElementById('accPass').value,
+        email: document.getElementById('accEmail').value.trim(),
+        phone: document.getElementById('accPhone').value.trim(),
+        notes: document.getElementById('accNotes').value.trim()
+      };
 
-      if (editId) {
-        const idx = accounts.findIndex(a => a.id === editId);
-        if (idx !== -1) {
-          accounts[idx] = { ...accounts[idx], game, user, password, email, phone, notes, updatedAt: new Date().toISOString() };
-          showToast('Đã cập nhật tài khoản!');
-        }
+      if (id) {
+        const idx = accounts.findIndex(a => a.id === id);
+        accounts[idx] = { ...accounts[idx], ...data };
       } else {
-        accounts.unshift({
-          id: 'acc_' + Date.now(),
-          game,
-          user,
-          password,
-          email,
-          phone,
-          notes,
-          updatedAt: new Date().toISOString()
-        });
-        showToast('Đã thêm tài khoản mới!');
+        accounts.unshift({ id: 'acc_' + Date.now(), ...data });
       }
 
-      saveToLocalStorage();
+      await pushToCloud();
       closeModal();
-      updateGameFilterOptions();
+      updateGameFilter();
       renderAccounts();
+      showToast('Đã lưu và đồng bộ lên đám mây!');
     }
 
-    function editAccount(id) {
-      openModal(id);
-    }
-
-    function deleteAccount(id) {
-      if (confirm('Bạn có chắc chắn muốn xóa tài khoản này khỏi kho?')) {
+    async function deleteAccount(id) {
+      if (confirm('Xóa tài khoản này khỏi đám mây?')) {
         accounts = accounts.filter(a => a.id !== id);
-        saveToLocalStorage();
-        updateGameFilterOptions();
+        await pushToCloud();
+        updateGameFilter();
         renderAccounts();
-        showToast('Đã xóa tài khoản.');
+        showToast('Đã xóa.');
       }
-    }
-
-    // Các tiện ích
-    function toggleCardPass(id) {
-      const input = document.getElementById(`pass_field_${id}`);
-      const icon = document.getElementById(`card_eye_${id}`);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.setAttribute('data-lucide', 'eye-off');
-      } else {
-        input.type = 'password';
-        icon.setAttribute('data-lucide', 'eye');
-      }
-      lucide.createIcons();
-    }
-
-    function togglePassVisibility(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.setAttribute('data-lucide', 'eye-off');
-      } else {
-        input.type = 'password';
-        icon.setAttribute('data-lucide', 'eye');
-      }
-      lucide.createIcons();
-    }
-
-    function generateRandomPass() {
-      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
-      let res = "";
-      for (let i = 0; i < 16; i++) {
-        res += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      document.getElementById('accPass').value = res;
-      document.getElementById('accPass').type = 'text';
-      document.getElementById('modalEyeIcon').setAttribute('data-lucide', 'eye-off');
-      lucide.createIcons();
-      showToast('Đã tạo mật khẩu ngẫu nhiên 16 ký tự');
-    }
-
-    function copyToClipboard(text, label) {
-      navigator.clipboard.writeText(text).then(() => {
-        showToast(`Đã sao chép ${label}!`);
-      }).catch(() => {
-        showToast('Lỗi khi sao chép!');
-      });
     }
 
     function showToast(msg) {
-      const toast = document.getElementById('toast');
+      const t = document.getElementById('toast');
       document.getElementById('toastMsg').innerText = msg;
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      toast.classList.add('translate-y-0', 'opacity-100');
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-        toast.classList.remove('translate-y-0', 'opacity-100');
-      }, 2500);
-    }
-
-    function toggleDataDropdown() {
-      const d = document.getElementById('dataDropdown');
-      d.classList.toggle('hidden');
-    }
-
-    function exportData() {
-      if (accounts.length === 0) {
-        showToast('Kho dữ liệu đang trống!');
-        return;
-      }
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(accounts, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `game_vault_backup_${new Date().toISOString().slice(0, 10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      showToast('Đã xuất file JSON sao lưu!');
-    }
-
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported)) {
-            accounts = imported;
-            saveToLocalStorage();
-            updateGameFilterOptions();
-            renderAccounts();
-            showToast('Nhập dữ liệu thành công!');
-          } else {
-            showToast('Định dạng JSON không hợp lệ!');
-          }
-        } catch (err) {
-          showToast('Không thể đọc file JSON!');
-        }
-      };
-      reader.readAsText(file);
-      event.target.value = '';
-    }
-
-    function escapeHtml(string) {
-      return String(string || '').replace(/[&<>"']/g, function(s) {
-        return {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        }[s];
-      });
+      t.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2500);
     }
   </script>
 </body>
