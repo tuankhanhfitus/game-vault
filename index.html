@@ -175,7 +175,12 @@
 
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Mật khẩu *</label>
-          <input type="text" id="accPass" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm font-mono text-white focus:border-cyan-500">
+          <div class="relative">
+            <input type="password" id="accPass" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm font-mono text-white focus:border-cyan-500 pr-10">
+            <button type="button" onclick="toggleModalPassVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-white">
+              <i data-lucide="eye" id="modalPassEyeIcon" class="w-4 h-4"></i>
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -207,14 +212,12 @@
   </div>
 
   <script>
-    // ========================================================
-    // CẤU HÌNH FIREBASE TỰ ĐỘNG ĐƯỢC ĐIỀN CHÍNH XÁC:
-    // ========================================================
+    // Cấu hình Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCE96cqlhrxIdRFLGFbcOnFpeH0wVob8TU",
       authDomain: "game-vault-cloud-e29eb.firebaseapp.com",
       projectId: "game-vault-cloud-e29eb",
-      storageBucket: "game-vault-cloud-e29eb.firebasestorage.app",
+      storageStorage: "game-vault-cloud-e29eb.firebasestorage.app",
       messagingSenderId: "838807435904",
       appId: "1:838807435904:web:42c8b91fc76bea46eb8465"
     };
@@ -408,33 +411,123 @@
       }
 
       empty.classList.add('hidden');
-      grid.innerHTML = filtered.map(a => `
-        <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between neon-glow">
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="font-bold text-base text-cyan-400 font-gaming">${a.game}</span>
-              <div class="flex gap-1">
-                <button onclick="editAccount('${a.id}')" class="p-1 text-slate-400 hover:text-cyan-300"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                <button onclick="deleteAccount('${a.id}')" class="p-1 text-slate-400 hover:text-rose-400"><i data-lucide="trash" class="w-4 h-4"></i></button>
+      grid.innerHTML = filtered.map(a => {
+        const safeGame = escapeHtml(a.game);
+        const safeUser = escapeHtml(a.user);
+        const safePass = escapeHtml(a.password);
+        const safeEmail = escapeHtml(a.email || '');
+        const safePhone = escapeHtml(a.phone || '');
+        const safeNotes = escapeHtml(a.notes || '');
+
+        return `
+          <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between neon-glow">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-bold text-base text-cyan-400 font-gaming">${safeGame}</span>
+                <div class="flex gap-1">
+                  <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1 text-slate-400 hover:text-cyan-300">
+                    <i data-lucide="edit" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="deleteAccount('${a.id}')" title="Xóa" class="p-1 text-slate-400 hover:text-rose-400">
+                    <i data-lucide="trash" class="w-4 h-4"></i>
+                  </button>
+                </div>
               </div>
+
+              <div class="bg-cyber-900 p-2.5 rounded-xl border border-slate-800 text-xs space-y-1.5">
+                <!-- User -->
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-400">User:</span>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono text-slate-200 select-all">${safeUser}</span>
+                    <button onclick="copyToClipboard('${safeUser}', 'Tài khoản')" title="Sao chép User" class="text-slate-500 hover:text-white p-0.5">
+                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Password (Mặc định ẩn) -->
+                <div class="flex justify-between items-center">
+                  <span class="text-slate-400">Pass:</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="password" id="pass_field_${a.id}" value="${safePass}" readonly
+                      class="bg-transparent text-right font-mono text-cyan-300 focus:outline-none w-28 text-xs select-all">
+                    <button onclick="toggleCardPass('${a.id}')" title="Ẩn/Hiện Mật khẩu" class="text-slate-400 hover:text-white p-0.5">
+                      <i data-lucide="eye" id="card_eye_${a.id}" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="copyToClipboard('${safePass}', 'Mật khẩu')" title="Sao chép Pass" class="text-slate-500 hover:text-white p-0.5">
+                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Email (nếu có) -->
+                ${safeEmail ? `
+                  <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Mail:</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-slate-300 select-all">${safeEmail}</span>
+                      <button onclick="copyToClipboard('${safeEmail}', 'Email')" title="Sao chép Email" class="text-slate-500 hover:text-white p-0.5">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  </div>` : ''}
+
+                <!-- Phone (nếu có) -->
+                ${safePhone ? `
+                  <div class="flex justify-between items-center">
+                    <span class="text-slate-400">SĐT:</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-slate-300 select-all">${safePhone}</span>
+                      <button onclick="copyToClipboard('${safePhone}', 'Số điện thoại')" title="Sao chép SĐT" class="text-slate-500 hover:text-white p-0.5">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  </div>` : ''}
+              </div>
+
+              ${safeNotes ? `<p class="text-[11px] text-slate-400 mt-2 bg-slate-900/40 p-1.5 rounded border border-slate-800">${safeNotes}</p>` : ''}
             </div>
-            <div class="bg-cyber-900 p-2.5 rounded-xl border border-slate-800 text-xs space-y-1">
-              <div class="flex justify-between">
-                <span class="text-slate-400">User:</span>
-                <span class="font-mono text-slate-200 select-all">${a.user}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Pass:</span>
-                <span class="font-mono text-cyan-300 select-all">${a.password}</span>
-              </div>
-              ${a.email ? `<div class="flex justify-between"><span class="text-slate-400">Mail:</span><span class="text-slate-300 select-all">${a.email}</span></div>` : ''}
-              ${a.phone ? `<div class="flex justify-between"><span class="text-slate-400">SĐT:</span><span class="text-slate-300 select-all">${a.phone}</span></div>` : ''}
-            </div>
-            ${a.notes ? `<p class="text-[11px] text-slate-400 mt-2 bg-slate-900/40 p-1.5 rounded border border-slate-800">${a.notes}</p>` : ''}
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
       lucide.createIcons();
+    }
+
+    // Toggle ẩn hiện mật khẩu trên từng card
+    function toggleCardPass(id) {
+      const input = document.getElementById(`pass_field_${id}`);
+      const icon = document.getElementById(`card_eye_${id}`);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    // Toggle ẩn hiện mật khẩu trong modal
+    function toggleModalPassVisibility() {
+      const input = document.getElementById('accPass');
+      const icon = document.getElementById('modalPassEyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function copyToClipboard(text, label) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`Đã sao chép ${label}!`);
+      }).catch(() => {
+        showToast('Lỗi khi sao chép!');
+      });
     }
 
     function openModal(editId = null) {
@@ -506,6 +599,18 @@
       document.getElementById('toastMsg').innerText = msg;
       t.classList.remove('translate-y-20', 'opacity-0');
       setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2500);
+    }
+
+    function escapeHtml(string) {
+      return String(string || '').replace(/[&<>"']/g, function(s) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[s];
+      });
     }
   </script>
 </body>
