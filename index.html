@@ -203,7 +203,6 @@
       <form id="accountModalForm" onsubmit="saveAccount(event)" class="space-y-3">
         <input type="hidden" id="editAccountId">
 
-        <!-- Lựa chọn Danh mục -->
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Phân loại *</label>
           <div class="grid grid-cols-2 gap-2">
@@ -221,7 +220,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1">Tên Nền tảng / Game / MXH *</label>
-            <input type="text" id="accGame" required placeholder="VD: Facebook, Valorant, Discord..."
+            <input type="text" id="accGame" required placeholder="VD: Facebook, Steam, Discord..."
               class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
           <div>
@@ -255,7 +254,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (Link profile, 2FA backup code, Server...)</label>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (2FA code, link profile, server...)</label>
           <textarea id="accNotes" rows="2" placeholder="Ghi chú thêm..."
             class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500"></textarea>
         </div>
@@ -323,7 +322,70 @@
     let masterKey = null;
     let accounts = [];
     let isRegisterMode = false;
-    let currentCategoryFilter = 'ALL'; // ALL | GAME | SOCIAL
+    let currentCategoryFilter = 'ALL';
+
+    // ==================== THƯ VIỆN LOGO TỰ ĐỘNG (SVG) ====================
+    function getPlatformIcon(name, category) {
+      const n = (name || '').toLowerCase().trim();
+
+      // Facebook
+      if (n.includes('facebook') || n === 'fb') {
+        return `<div class="w-8 h-8 rounded-xl bg-[#1877F2]/20 border border-[#1877F2]/40 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </div>`;
+      }
+      // Google / Gmail
+      if (n.includes('google') || n.includes('gmail')) {
+        return `<div class="w-8 h-8 rounded-xl bg-[#EA4335]/20 border border-[#EA4335]/40 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 fill-[#EA4335]" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+        </div>`;
+      }
+      // TikTok
+      if (n.includes('tiktok')) {
+        return `<div class="w-8 h-8 rounded-xl bg-[#EE1D52]/20 border border-[#EE1D52]/40 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 fill-[#EE1D52]" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-1.01-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+        </div>`;
+      }
+      // Discord
+      if (n.includes('discord')) {
+        return `<div class="w-8 h-8 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 fill-[#5865F2]" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        </div>`;
+      }
+      // Telegram
+      if (n.includes('telegram') || n === 'tele') {
+        return `<div class="w-8 h-8 rounded-xl bg-[#229ED9]/20 border border-[#229ED9]/40 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 fill-[#229ED9]" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.562 8.161c-.18.716-.962 4.084-1.362 5.75-.17.708-.431.945-.683.968-.55.05-1.005-.364-1.538-.713-.833-.546-1.304-.886-2.113-1.42-.934-.616-.328-.955.204-1.507.139-.144 2.55-2.336 2.597-2.535.006-.025.011-.118-.045-.168-.056-.05-.138-.033-.198-.02-.085.019-1.439.914-4.062 2.686-.384.263-.733.393-1.045.386-.344-.008-1.006-.195-1.498-.355-.604-.196-1.084-.3-1.042-.633.022-.174.266-.352.732-.535 2.868-1.249 4.782-2.073 5.74-2.472 2.73-.137 3.298 1.096 3.298 1.096z"/></svg>
+        </div>`;
+      }
+      // Steam
+      if (n.includes('steam')) {
+        return `<div class="w-8 h-8 rounded-xl bg-slate-700/50 border border-cyan-400/40 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 fill-cyan-400" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.008l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.029 4.524 4.524s-2.03 4.524-4.524 4.524h-.105l-4.076 2.811c0 .052.005.105.005.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.155-3.331-2.677L.277 15.08C1.72 20.312 6.46 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12z"/></svg>
+        </div>`;
+      }
+      // Riot Games / LoL / Valorant
+      if (n.includes('riot') || n.includes('valorant') || n.includes('league') || n.includes('lol') || n.includes('liên minh')) {
+        return `<div class="w-8 h-8 rounded-xl bg-[#D13639]/20 border border-[#D13639]/40 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 fill-[#D13639]" viewBox="0 0 24 24"><path d="M13.414 1.707l-9.043 4.22 3.037 11.836 3.04-.647-.947-3.69 1.838-.392.83 3.235 2.072-.442-.832-3.236 1.839-.391.83 3.235 2.072-.442-.832-3.235 1.84-.392.83 3.235 3.003-.64L19.467 4.19zm-3.064 18.06l-3.315.706.745 2.905 3.314-.707zm5.955-1.267l-3.313.706.744 2.905 3.314-.706z"/></svg>
+        </div>`;
+      }
+      // YouTube
+      if (n.includes('youtube') || n.includes('yt')) {
+        return `<div class="w-8 h-8 rounded-xl bg-[#FF0000]/20 border border-[#FF0000]/40 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 fill-[#FF0000]" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </div>`;
+      }
+
+      // Mặc định (Tự tạo icon chữ cái mang phong cách Cyberpunk)
+      const firstLetter = (name || 'G').trim().charAt(0).toUpperCase();
+      const isSoc = category === 'SOCIAL';
+      const bgGrad = isSoc ? 'from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/40' : 'from-cyan-500/20 to-purple-500/20 text-cyan-400 border-cyan-500/40';
+
+      return `<div class="w-8 h-8 rounded-xl bg-gradient-to-tr ${bgGrad} border flex items-center justify-center font-bold font-gaming text-sm shrink-0">
+        ${firstLetter}
+      </div>`;
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
@@ -420,7 +482,6 @@
           if (!decrypted) throw new Error();
           accounts = JSON.parse(decrypted);
 
-          // Đảm bảo các tài khoản cũ có trường category
           accounts.forEach(a => {
             if (!a.category) a.category = 'GAME';
           });
@@ -463,7 +524,6 @@
       showToast('Đã đăng xuất và xóa phiên lưu trữ.');
     }
 
-    // ==================== XUẤT TOÀN BỘ RA EXCEL (.XLSX) ====================
     function exportToExcel() {
       const activeList = accounts.filter(a => !a.deleted);
 
@@ -484,13 +544,13 @@
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
       worksheet['!cols'] = [
-        { wch: 15 }, // Category
-        { wch: 22 }, // Platform
-        { wch: 25 }, // User
-        { wch: 25 }, // Password
-        { wch: 30 }, // Email
-        { wch: 18 }, // Phone number
-        { wch: 35 }  // Notes
+        { wch: 15 },
+        { wch: 22 },
+        { wch: 25 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 18 },
+        { wch: 35 }
       ];
 
       const workbook = XLSX.utils.book_new();
@@ -503,7 +563,6 @@
       showToast(`Đã xuất thành công ${activeList.length} tài khoản ra file Excel!`);
     }
 
-    // ==================== NHẬP TỪ EXCEL ====================
     function handleExcelUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -545,7 +604,6 @@
             const game = col.g !== -1 ? String(row[col.g] || '').trim() : '';
             const user = col.u !== -1 ? String(row[col.u] || '').trim() : '';
             
-            // Tự động nhận diện category
             let cat = 'GAME';
             if (col.cat !== -1 && String(row[col.cat] || '').toLowerCase().includes('social')) {
               cat = 'SOCIAL';
@@ -637,18 +695,24 @@
         const safePhone = escapeHtml(a.phone || '');
         const safeNotes = escapeHtml(a.notes || '');
         const isSocial = a.category === 'SOCIAL';
+        const iconHtml = getPlatformIcon(a.game, a.category);
 
         return `
-          <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between neon-glow">
+          <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between neon-glow transition">
             <div>
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
-                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${isSocial ? 'bg-pink-500/10 text-pink-400 border-pink-500/30' : 'bg-purple-500/10 text-purple-400 border-purple-500/30'}">
-                    ${isSocial ? 'MXH' : 'GAME'}
-                  </span>
-                  <span class="font-bold text-base text-cyan-400 font-gaming">${safeGame}</span>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  ${iconHtml}
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-bold text-base text-cyan-400 font-gaming truncate">${safeGame}</span>
+                      <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border shrink-0 ${isSocial ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30'}">
+                        ${isSocial ? 'MXH' : 'GAME'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div class="flex gap-1">
+                <div class="flex gap-1 shrink-0">
                   <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 rounded-lg transition">
                     <i data-lucide="edit" class="w-4 h-4"></i>
                   </button>
@@ -776,7 +840,6 @@
         title.innerText = 'Thêm Tài Khoản Mới';
         document.getElementById('editAccountId').value = '';
         
-        // Mặc định chọn theo Tab đang mở
         const catRadios = document.getElementsByName('accCategory');
         for (let r of catRadios) {
           r.checked = (currentCategoryFilter === 'SOCIAL' ? r.value === 'SOCIAL' : r.value === 'GAME');
