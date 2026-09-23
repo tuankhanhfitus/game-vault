@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Account Vault - Cloud Sync</title>
+  <title>Account Vault - Game & Social</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
@@ -50,7 +50,7 @@
           <i data-lucide="cloud-lock" class="w-9 h-9 text-white"></i>
         </div>
         <h1 class="text-2xl font-bold font-gaming tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
-          GAME VAULT CLOUD
+          ACCOUNT VAULT
         </h1>
         <p id="lockScreenSubtext" class="text-xs text-slate-400 mt-1">Đang kiểm tra phiên đăng nhập...</p>
       </div>
@@ -96,15 +96,15 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center">
-          <i data-lucide="gamepad-2" class="w-6 h-6 text-white"></i>
+          <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
         </div>
         <div>
           <span class="text-lg font-bold font-gaming text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 leading-none block">
-            GAME VAULT
+            ACCOUNT VAULT
           </span>
           <span id="userStatusTag" class="text-[11px] text-emerald-400 flex items-center gap-1">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Đồng bộ Cloud
+            Game & Social Cloud
           </span>
         </div>
       </div>
@@ -145,15 +145,36 @@
 
   <!-- NỘI DUNG CHÍNH -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- Bộ lọc danh mục (Tabs: Tất cả / Game / Mạng xã hội) -->
+    <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+      <button onclick="setCategoryTab('ALL')" id="tabCatAll"
+        class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition">
+        <i data-lucide="layers" class="w-4 h-4"></i>
+        <span>Tất Cả</span>
+      </button>
+      <button onclick="setCategoryTab('GAME')" id="tabCatGame"
+        class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
+        <i data-lucide="gamepad-2" class="w-4 h-4 text-purple-400"></i>
+        <span>Game</span>
+      </button>
+      <button onclick="setCategoryTab('SOCIAL')" id="tabCatSocial"
+        class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
+        <i data-lucide="share-2" class="w-4 h-4 text-pink-400"></i>
+        <span>Mạng Xã Hội</span>
+      </button>
+    </div>
+
+    <!-- Thanh tìm kiếm và nút Thêm -->
     <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
       <div class="flex flex-1 flex-col sm:flex-row gap-2.5">
         <div class="relative flex-1">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
-          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm theo game, user, email, SĐT..."
+          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm theo tên nền tảng, user, email, SĐT..."
             class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
         </div>
-        <select id="gameFilterSelect" onchange="renderAccounts()" class="px-3.5 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-300">
-          <option value="ALL">Tất cả Game</option>
+        <select id="platformFilterSelect" onchange="renderAccounts()" class="px-3.5 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-300">
+          <option value="ALL">Tất cả Nền tảng</option>
         </select>
       </div>
       <button onclick="openModal()" class="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition active:scale-95">
@@ -166,8 +187,8 @@
 
     <div id="emptyState" class="hidden text-center py-16">
       <i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-500 mb-3"></i>
-      <h3 class="text-base font-semibold text-slate-300">Chưa có tài khoản nào trên đám mây</h3>
-      <p class="text-xs text-slate-500 mt-1 mb-4">Hãy tải file Excel hoặc bấm Thêm Tài Khoản để đồng bộ ngay.</p>
+      <h3 class="text-base font-semibold text-slate-300">Chưa có tài khoản nào</h3>
+      <p class="text-xs text-slate-500 mt-1 mb-4">Bấm Thêm Tài Khoản hoặc Nhập Excel để lưu trữ ngay.</p>
     </div>
   </main>
 
@@ -181,14 +202,32 @@
 
       <form id="accountModalForm" onsubmit="saveAccount(event)" class="space-y-3">
         <input type="hidden" id="editAccountId">
+
+        <!-- Lựa chọn Danh mục -->
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Phân loại *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center justify-center gap-2 p-2 bg-cyber-900 border border-slate-700 rounded-xl cursor-pointer hover:border-cyan-500 text-xs">
+              <input type="radio" name="accCategory" value="GAME" checked class="accent-cyan-500">
+              <span class="flex items-center gap-1 text-slate-200"><i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-purple-400"></i> Game</span>
+            </label>
+            <label class="flex items-center justify-center gap-2 p-2 bg-cyber-900 border border-slate-700 rounded-xl cursor-pointer hover:border-cyan-500 text-xs">
+              <input type="radio" name="accCategory" value="SOCIAL" class="accent-cyan-500">
+              <span class="flex items-center gap-1 text-slate-200"><i data-lucide="share-2" class="w-3.5 h-3.5 text-pink-400"></i> Mạng Xã Hội</span>
+            </label>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Game *</label>
-            <input type="text" id="accGame" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tên Nền tảng / Game / MXH *</label>
+            <input type="text" id="accGame" required placeholder="VD: Facebook, Valorant, Discord..."
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">User *</label>
-            <input type="text" id="accUser" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tên tài khoản / User *</label>
+            <input type="text" id="accUser" required placeholder="Username / Tên đăng nhập"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
         </div>
 
@@ -204,18 +243,21 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Email</label>
-            <input type="text" id="accEmail" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Email liên kết</label>
+            <input type="text" id="accEmail" placeholder="example@gmail.com"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1">Số điện thoại</label>
-            <input type="text" id="accPhone" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+            <input type="text" id="accPhone" placeholder="09xxxxxxxx"
+              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú</label>
-          <textarea id="accNotes" rows="2" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500"></textarea>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (Link profile, 2FA backup code, Server...)</label>
+          <textarea id="accNotes" rows="2" placeholder="Ghi chú thêm..."
+            class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500"></textarea>
         </div>
 
         <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
@@ -281,6 +323,7 @@
     let masterKey = null;
     let accounts = [];
     let isRegisterMode = false;
+    let currentCategoryFilter = 'ALL'; // ALL | GAME | SOCIAL
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
@@ -305,6 +348,27 @@
         }
       });
     });
+
+    function setCategoryTab(category) {
+      currentCategoryFilter = category;
+      const tabs = [
+        { id: 'tabCatAll', cat: 'ALL' },
+        { id: 'tabCatGame', cat: 'GAME' },
+        { id: 'tabCatSocial', cat: 'SOCIAL' }
+      ];
+
+      tabs.forEach(t => {
+        const btn = document.getElementById(t.id);
+        if (t.cat === category) {
+          btn.className = "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition";
+        } else {
+          btn.className = "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition";
+        }
+      });
+
+      updatePlatformFilter();
+      renderAccounts();
+    }
 
     function switchAuthTab(mode) {
       isRegisterMode = (mode === 'register');
@@ -355,6 +419,11 @@
           const decrypted = bytes.toString(CryptoJS.enc.Utf8);
           if (!decrypted) throw new Error();
           accounts = JSON.parse(decrypted);
+
+          // Đảm bảo các tài khoản cũ có trường category
+          accounts.forEach(a => {
+            if (!a.category) a.category = 'GAME';
+          });
         } catch (e) {
           alert('Sai Master Password! Vui lòng nhập lại đúng khóa bảo vệ.');
           localStorage.removeItem(MASTER_KEY_STORAGE);
@@ -365,7 +434,7 @@
         accounts = [];
       }
       updateTrashCount();
-      updateGameFilter();
+      updatePlatformFilter();
       renderAccounts();
     }
 
@@ -403,9 +472,9 @@
         return;
       }
 
-      // Tạo cấu trúc dữ liệu theo đúng chuẩn các cột của bạn
       const excelData = activeList.map(item => ({
-        "Game Name": item.game || "",
+        "Category": item.category === 'SOCIAL' ? 'Social Media' : 'Game',
+        "Platform / Game": item.game || "",
         "User": item.user || "",
         "Password": item.password || "",
         "Email": item.email || "",
@@ -413,12 +482,10 @@
         "Notes": item.notes || ""
       }));
 
-      // Chuyển thành worksheet
       const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-      // Căn chỉnh độ rộng cho từng cột cho đẹp mắt
       worksheet['!cols'] = [
-        { wch: 22 }, // Game Name
+        { wch: 15 }, // Category
+        { wch: 22 }, // Platform
         { wch: 25 }, // User
         { wch: 25 }, // Password
         { wch: 30 }, // Email
@@ -426,13 +493,11 @@
         { wch: 35 }  // Notes
       ];
 
-      // Tạo workbook và gắn sheet vào
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Game Accounts");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Accounts");
 
-      // Tải file về máy
       const today = new Date().toISOString().slice(0, 10);
-      const fileName = `Danh_sach_tai_khoan_game_${today}.xlsx`;
+      const fileName = `Danh_sach_tai_khoan_${today}.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
       showToast(`Đã xuất thành công ${activeList.length} tài khoản ra file Excel!`);
@@ -450,15 +515,16 @@
           const workbook = XLSX.read(data, { type: 'array' });
           const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
 
-          let headerIdx = -1, col = { g: -1, u: -1, p: -1, e: -1, ph: -1, n: -1 };
+          let headerIdx = -1, col = { g: -1, u: -1, p: -1, e: -1, ph: -1, n: -1, cat: -1 };
           for (let r = 0; r < rows.length; r++) {
             const row = rows[r].map(c => String(c).trim().toLowerCase());
-            const g = row.findIndex(c => c.includes('game'));
-            const u = row.findIndex(c => c.includes('user'));
-            const p = row.findIndex(c => c.includes('pass'));
+            const g = row.findIndex(c => c.includes('game') || c.includes('platform') || c.includes('nền tảng') || c.includes('tên'));
+            const u = row.findIndex(c => c.includes('user') || c.includes('tài khoản'));
+            const p = row.findIndex(c => c.includes('pass') || c.includes('mật khẩu'));
             if (g !== -1 && (u !== -1 || p !== -1)) {
               headerIdx = r;
               col.g = g; col.u = u; col.p = p;
+              col.cat = row.findIndex(c => c.includes('category') || c.includes('loại') || c.includes('danh mục'));
               col.e = row.findIndex(c => c.includes('email') || c.includes('mail'));
               col.ph = row.findIndex(c => c.includes('phone') || c.includes('sđt'));
               col.n = row.findIndex(c => c.includes('note') || c.includes('ghi'));
@@ -467,19 +533,31 @@
           }
 
           if (headerIdx === -1) {
-            showToast('Không tìm thấy cột Game Name / User / Password!');
+            showToast('Không tìm thấy cột Tên nền tảng/Game / User / Password!');
             return;
           }
+
+          const socialKeywords = ['facebook', 'fb', 'google', 'gmail', 'tiktok', 'discord', 'telegram', 'twitter', 'x', 'instagram', 'insta', 'zalo', 'threads', 'reddit', 'youtube'];
 
           let added = 0;
           for (let r = headerIdx + 1; r < rows.length; r++) {
             const row = rows[r];
             const game = col.g !== -1 ? String(row[col.g] || '').trim() : '';
             const user = col.u !== -1 ? String(row[col.u] || '').trim() : '';
+            
+            // Tự động nhận diện category
+            let cat = 'GAME';
+            if (col.cat !== -1 && String(row[col.cat] || '').toLowerCase().includes('social')) {
+              cat = 'SOCIAL';
+            } else if (socialKeywords.some(k => game.toLowerCase().includes(k))) {
+              cat = 'SOCIAL';
+            }
+
             if (game || user) {
               accounts.push({
                 id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-                game: game || 'Khác',
+                category: cat,
+                game: game || 'Chưa phân loại',
                 user: user,
                 password: col.p !== -1 ? String(row[col.p] || '').trim() : '',
                 email: col.e !== -1 ? String(row[col.e] || '').trim() : '',
@@ -493,7 +571,7 @@
 
           if (added > 0) {
             await pushToCloud();
-            updateGameFilter();
+            updatePlatformFilter();
             renderAccounts();
             showToast(`Đã tải lên đám mây ${added} tài khoản!`);
           }
@@ -506,13 +584,18 @@
       reader.readAsArrayBuffer(file);
     }
 
-    function updateGameFilter() {
-      const select = document.getElementById('gameFilterSelect');
+    function updatePlatformFilter() {
+      const select = document.getElementById('platformFilterSelect');
       const val = select.value;
-      const activeList = accounts.filter(a => !a.deleted);
-      const games = [...new Set(activeList.map(a => a.game).filter(Boolean))].sort();
-      select.innerHTML = '<option value="ALL">Tất cả Game</option>';
-      games.forEach(g => {
+      const activeList = accounts.filter(a => {
+        if (a.deleted) return false;
+        if (currentCategoryFilter !== 'ALL' && (a.category || 'GAME') !== currentCategoryFilter) return false;
+        return true;
+      });
+
+      const platforms = [...new Set(activeList.map(a => a.game).filter(Boolean))].sort();
+      select.innerHTML = '<option value="ALL">Tất cả Nền tảng</option>';
+      platforms.forEach(g => {
         const opt = document.createElement('option');
         opt.value = g; opt.innerText = g;
         select.appendChild(opt);
@@ -529,10 +612,11 @@
       const grid = document.getElementById('accountsGrid');
       const empty = document.getElementById('emptyState');
       const q = document.getElementById('searchInput').value.toLowerCase().trim();
-      const fg = document.getElementById('gameFilterSelect').value;
+      const fg = document.getElementById('platformFilterSelect').value;
 
       const filtered = accounts.filter(a => {
         if (a.deleted) return false;
+        if (currentCategoryFilter !== 'ALL' && (a.category || 'GAME') !== currentCategoryFilter) return false;
         const mg = (fg === 'ALL') || (a.game === fg);
         const mq = !q || a.game.toLowerCase().includes(q) || a.user.toLowerCase().includes(q) || (a.email && a.email.toLowerCase().includes(q));
         return mg && mq;
@@ -552,12 +636,18 @@
         const safeEmail = escapeHtml(a.email || '');
         const safePhone = escapeHtml(a.phone || '');
         const safeNotes = escapeHtml(a.notes || '');
+        const isSocial = a.category === 'SOCIAL';
 
         return `
           <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between neon-glow">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <span class="font-bold text-base text-cyan-400 font-gaming">${safeGame}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${isSocial ? 'bg-pink-500/10 text-pink-400 border-pink-500/30' : 'bg-purple-500/10 text-purple-400 border-purple-500/30'}">
+                    ${isSocial ? 'MXH' : 'GAME'}
+                  </span>
+                  <span class="font-bold text-base text-cyan-400 font-gaming">${safeGame}</span>
+                </div>
                 <div class="flex gap-1">
                   <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 rounded-lg transition">
                     <i data-lucide="edit" class="w-4 h-4"></i>
@@ -669,6 +759,12 @@
         if (item) {
           title.innerText = 'Cập Nhật Tài Khoản';
           document.getElementById('editAccountId').value = item.id;
+          
+          const catRadios = document.getElementsByName('accCategory');
+          for (let r of catRadios) {
+            r.checked = (r.value === (item.category || 'GAME'));
+          }
+
           document.getElementById('accGame').value = item.game || '';
           document.getElementById('accUser').value = item.user || '';
           document.getElementById('accPass').value = item.password || '';
@@ -679,6 +775,12 @@
       } else {
         title.innerText = 'Thêm Tài Khoản Mới';
         document.getElementById('editAccountId').value = '';
+        
+        // Mặc định chọn theo Tab đang mở
+        const catRadios = document.getElementsByName('accCategory');
+        for (let r of catRadios) {
+          r.checked = (currentCategoryFilter === 'SOCIAL' ? r.value === 'SOCIAL' : r.value === 'GAME');
+        }
       }
 
       modal.classList.remove('hidden');
@@ -699,7 +801,14 @@
     async function saveAccount(e) {
       e.preventDefault();
       const id = document.getElementById('editAccountId').value;
+      const catRadios = document.getElementsByName('accCategory');
+      let selectedCategory = 'GAME';
+      for (let r of catRadios) {
+        if (r.checked) selectedCategory = r.value;
+      }
+
       const data = {
+        category: selectedCategory,
         game: document.getElementById('accGame').value.trim(),
         user: document.getElementById('accUser').value.trim(),
         password: document.getElementById('accPass').value,
@@ -719,7 +828,7 @@
 
       await pushToCloud();
       closeModal();
-      updateGameFilter();
+      updatePlatformFilter();
       renderAccounts();
       showToast('Đã lưu và đồng bộ lên đám mây!');
     }
@@ -730,7 +839,7 @@
         accounts[idx].deleted = true;
         accounts[idx].deletedAt = new Date().toISOString();
         await pushToCloud();
-        updateGameFilter();
+        updatePlatformFilter();
         renderAccounts();
         showToast('Đã chuyển tài khoản vào Thùng Rác.');
       }
@@ -770,6 +879,9 @@
         <div class="bg-cyber-900 border border-slate-700/80 rounded-xl p-3 flex items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
+              <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded border ${a.category === 'SOCIAL' ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30'}">
+                ${a.category === 'SOCIAL' ? 'MXH' : 'GAME'}
+              </span>
               <span class="font-bold text-sm text-cyan-400 font-gaming truncate">${escapeHtml(a.game)}</span>
               <span class="text-xs text-slate-300 font-mono truncate">(${escapeHtml(a.user)})</span>
             </div>
@@ -798,7 +910,7 @@
         delete accounts[idx].deletedAt;
         await pushToCloud();
         renderTrashList();
-        updateGameFilter();
+        updatePlatformFilter();
         renderAccounts();
         showToast('Đã khôi phục tài khoản về màn hình chính!');
       }
@@ -809,7 +921,7 @@
         accounts = accounts.filter(a => a.id !== id);
         await pushToCloud();
         renderTrashList();
-        updateGameFilter();
+        updatePlatformFilter();
         renderAccounts();
         showToast('Đã xóa vĩnh viễn tài khoản.');
       }
@@ -820,7 +932,7 @@
         accounts = accounts.filter(a => !a.deleted);
         await pushToCloud();
         renderTrashList();
-        updateGameFilter();
+        updatePlatformFilter();
         renderAccounts();
         showToast('Đã dọn sạch thùng rác.');
       }
