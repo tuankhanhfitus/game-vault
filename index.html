@@ -52,10 +52,10 @@
         <h1 class="text-2xl font-bold font-gaming tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
           GAME VAULT CLOUD
         </h1>
-        <p class="text-xs text-slate-400 mt-1">Đồng bộ đám mây kết hợp mã hóa AES-256</p>
+        <p id="lockScreenSubtext" class="text-xs text-slate-400 mt-1">Đang kiểm tra trạng thái đăng nhập...</p>
       </div>
 
-      <div class="flex border-b border-slate-700 mb-4 text-xs font-semibold">
+      <div id="authTabs" class="flex border-b border-slate-700 mb-4 text-xs font-semibold">
         <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-cyan-400 border-b-2 border-cyan-400">Đăng Nhập</button>
         <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-slate-400 hover:text-white">Đăng Ký</button>
       </div>
@@ -79,7 +79,7 @@
           </label>
           <input type="password" id="masterPasswordInput" required placeholder="Khóa bảo vệ kho dữ liệu"
             class="w-full px-3.5 py-2.5 bg-cyber-900 border border-emerald-500/50 rounded-xl text-white text-sm focus:border-emerald-400 focus:outline-none">
-          <p class="text-[11px] text-slate-400 mt-1 leading-snug">Chỉ bạn biết mật khẩu này. Dữ liệu sẽ được mã hóa trên máy trước khi tải lên Firebase.</p>
+          <p class="text-[11px] text-slate-400 mt-1 leading-snug">Web sẽ tự động lưu lại trên máy này để khi F5 không cần đăng nhập lại.</p>
         </div>
 
         <p id="authErrorMsg" class="text-xs text-rose-400 hidden"></p>
@@ -212,12 +212,11 @@
   </div>
 
   <script>
-    // Cấu hình Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCE96cqlhrxIdRFLGFbcOnFpeH0wVob8TU",
       authDomain: "game-vault-cloud-e29eb.firebaseapp.com",
       projectId: "game-vault-cloud-e29eb",
-      storageStorage: "game-vault-cloud-e29eb.firebasestorage.app",
+      storageBucket: "game-vault-cloud-e29eb.firebasestorage.app",
       messagingSenderId: "838807435904",
       appId: "1:838807435904:web:42c8b91fc76bea46eb8465"
     };
@@ -226,13 +225,37 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    const MASTER_KEY_STORAGE = 'GV_SAVED_MASTER_PASS_V1';
+
     let currentUser = null;
     let masterKey = null;
     let accounts = [];
     let isRegisterMode = false;
 
+    // Tự động kiểm tra phiên đăng nhập Firebase và Master Key khi mở/F5 trang web
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          currentUser = user;
+          const cachedPass = localStorage.getItem(MASTER_KEY_STORAGE);
+          if (cachedPass) {
+            masterKey = cachedPass;
+            await syncFromCloud();
+            document.getElementById('lockScreen').classList.add('hidden');
+          } else {
+            // Đã đăng nhập Firebase nhưng chưa có master password
+            document.getElementById('lockScreen').classList.remove('hidden');
+            document.getElementById('lockScreenSubtext').innerText = 'Nhập Master Password để mở khóa kho dữ liệu';
+            document.getElementById('cloudEmail').value = user.email || '';
+            document.getElementById('cloudEmail').readOnly = true;
+          }
+        } else {
+          document.getElementById('lockScreen').classList.remove('hidden');
+          document.getElementById('lockScreenSubtext').innerText = 'Đăng nhập để đồng bộ kho dữ liệu';
+        }
+      });
     });
 
     function switchAuthTab(mode) {
@@ -259,7 +282,11 @@
           const res = await auth.signInWithEmailAndPassword(email, password);
           currentUser = res.user;
         }
+
         masterKey = masterPass;
+        // Lưu Master Password vào localStorage để tự động giải mã khi F5
+        localStorage.setItem(MASTER_KEY_STORAGE, masterKey);
+
         await syncFromCloud();
         document.getElementById('lockScreen').classList.add('hidden');
         showToast('Đã kết nối và đồng bộ đám mây!');
@@ -282,7 +309,9 @@
           if (!decrypted) throw new Error();
           accounts = JSON.parse(decrypted);
         } catch (e) {
-          alert('Sai Master Password! Không thể giải mã dữ liệu.');
+          alert('Sai Master Password! Vui lòng nhập lại đúng khóa bảo vệ.');
+          localStorage.removeItem(MASTER_KEY_STORAGE);
+          document.getElementById('lockScreen').classList.remove('hidden');
           accounts = [];
         }
       } else {
@@ -303,14 +332,18 @@
       });
     }
 
+    // Khi người dùng chủ động bấm Đăng xuất -> Xóa sạch session và Master Key lưu tạm
     function lockVault() {
       auth.signOut();
+      localStorage.removeItem(MASTER_KEY_STORAGE);
       currentUser = null;
       masterKey = null;
       accounts = [];
+      document.getElementById('cloudEmail').readOnly = false;
       document.getElementById('accountsGrid').innerHTML = '';
       document.getElementById('lockScreen').classList.remove('hidden');
-      showToast('Đã đăng xuất.');
+      document.getElementById('lockScreenSubtext').innerText = 'Đã đăng xuất tài khoản';
+      showToast('Đã đăng xuất và xóa phiên lưu trữ.');
     }
 
     function handleExcelUpload(event) {
@@ -435,7 +468,6 @@
               </div>
 
               <div class="bg-cyber-900 p-2.5 rounded-xl border border-slate-800 text-xs space-y-1.5">
-                <!-- User -->
                 <div class="flex justify-between items-center">
                   <span class="text-slate-400">User:</span>
                   <div class="flex items-center gap-1.5">
@@ -446,7 +478,6 @@
                   </div>
                 </div>
 
-                <!-- Password (Mặc định ẩn) -->
                 <div class="flex justify-between items-center">
                   <span class="text-slate-400">Pass:</span>
                   <div class="flex items-center gap-1.5">
@@ -461,7 +492,6 @@
                   </div>
                 </div>
 
-                <!-- Email (nếu có) -->
                 ${safeEmail ? `
                   <div class="flex justify-between items-center">
                     <span class="text-slate-400">Mail:</span>
@@ -473,7 +503,6 @@
                     </div>
                   </div>` : ''}
 
-                <!-- Phone (nếu có) -->
                 ${safePhone ? `
                   <div class="flex justify-between items-center">
                     <span class="text-slate-400">SĐT:</span>
@@ -494,7 +523,6 @@
       lucide.createIcons();
     }
 
-    // Toggle ẩn hiện mật khẩu trên từng card
     function toggleCardPass(id) {
       const input = document.getElementById(`pass_field_${id}`);
       const icon = document.getElementById(`card_eye_${id}`);
@@ -508,7 +536,6 @@
       lucide.createIcons();
     }
 
-    // Toggle ẩn hiện mật khẩu trong modal
     function toggleModalPassVisibility() {
       const input = document.getElementById('accPass');
       const icon = document.getElementById('modalPassEyeIcon');
