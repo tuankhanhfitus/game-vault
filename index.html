@@ -109,14 +109,33 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <label for="excelFileInput" class="cursor-pointer px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5">
-          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i>
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <!-- Xuất Excel -->
+        <button onclick="exportToExcel()" title="Tải toàn bộ tài khoản ra file Excel"
+          class="px-2.5 sm:px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+          <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
+          <span class="hidden sm:inline">Xuất Excel</span>
+        </button>
+
+        <!-- Nhập Excel -->
+        <label for="excelFileInput" title="Nhập tài khoản từ file Excel"
+          class="cursor-pointer px-2.5 sm:px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+          <i data-lucide="upload" class="w-4 h-4 text-cyan-400"></i>
           <span class="hidden sm:inline">Nhập Excel</span>
         </label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
 
-        <button onclick="lockVault()" class="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5">
+        <!-- Thùng Rác -->
+        <button onclick="openTrashModal()" title="Xem thùng rác"
+          class="px-2.5 sm:px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+          <i data-lucide="trash-2" class="w-4 h-4 text-amber-400"></i>
+          <span class="hidden md:inline">Thùng Rác</span>
+          <span id="trashCountBadge" class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-amber-500/30">0</span>
+        </button>
+
+        <!-- Đăng xuất -->
+        <button onclick="lockVault()" title="Đăng xuất"
+          class="px-2.5 sm:px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
           <i data-lucide="log-out" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Đăng xuất</span>
         </button>
@@ -137,7 +156,7 @@
           <option value="ALL">Tất cả Game</option>
         </select>
       </div>
-      <button onclick="openModal()" class="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2">
+      <button onclick="openModal()" class="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition active:scale-95">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
         <span>Thêm Tài Khoản</span>
       </button>
@@ -152,7 +171,7 @@
     </div>
   </main>
 
-  <!-- MODAL THÊM / SỬA -->
+  <!-- MODAL THÊM / SỬA TÀI KHOẢN -->
   <div id="accountModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="w-full max-w-lg bg-cyber-800 border border-slate-700 rounded-2xl p-6 shadow-2xl relative">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
@@ -204,6 +223,37 @@
           <button type="submit" id="saveAccountBtn" class="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm">Lưu & Đẩy Lên Cloud</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL THÙNG RÁC -->
+  <div id="trashModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-cyber-800 border border-slate-700 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="trash-2" class="w-5 h-5 text-amber-400"></i>
+          <h3 class="text-lg font-bold font-gaming text-amber-400">Thùng Rác Tài Khoản</h3>
+        </div>
+        <button type="button" onclick="closeTrashModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="flex items-center justify-between mb-3 text-xs">
+        <span class="text-slate-400">Tài khoản ở đây sẽ không hiển thị ở màn hình chính.</span>
+        <button id="emptyTrashBtn" onclick="emptyTrashConfirm()" class="text-rose-400 hover:text-rose-300 hover:underline font-semibold shrink-0 ml-2 hidden">
+          Dọn sạch thùng rác
+        </button>
+      </div>
+
+      <div id="trashList" class="overflow-y-auto space-y-2.5 flex-1 pr-1"></div>
+
+      <div id="emptyTrashNotice" class="hidden text-center py-10">
+        <i data-lucide="check-circle" class="w-10 h-10 mx-auto text-slate-600 mb-2"></i>
+        <p class="text-sm text-slate-400">Thùng rác đang trống.</p>
+      </div>
+
+      <div class="flex justify-end pt-4 border-t border-slate-700 mt-4">
+        <button type="button" onclick="closeTrashModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium">Đóng</button>
+      </div>
     </div>
   </div>
 
@@ -314,6 +364,7 @@
       } else {
         accounts = [];
       }
+      updateTrashCount();
       updateGameFilter();
       renderAccounts();
     }
@@ -327,6 +378,7 @@
         payload: encrypted,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
+      updateTrashCount();
     }
 
     function lockVault() {
@@ -342,6 +394,51 @@
       showToast('Đã đăng xuất và xóa phiên lưu trữ.');
     }
 
+    // ==================== XUẤT TOÀN BỘ RA EXCEL (.XLSX) ====================
+    function exportToExcel() {
+      const activeList = accounts.filter(a => !a.deleted);
+
+      if (activeList.length === 0) {
+        showToast('Kho dữ liệu đang trống, không có gì để xuất!');
+        return;
+      }
+
+      // Tạo cấu trúc dữ liệu theo đúng chuẩn các cột của bạn
+      const excelData = activeList.map(item => ({
+        "Game Name": item.game || "",
+        "User": item.user || "",
+        "Password": item.password || "",
+        "Email": item.email || "",
+        "Phone number": item.phone || "",
+        "Notes": item.notes || ""
+      }));
+
+      // Chuyển thành worksheet
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Căn chỉnh độ rộng cho từng cột cho đẹp mắt
+      worksheet['!cols'] = [
+        { wch: 22 }, // Game Name
+        { wch: 25 }, // User
+        { wch: 25 }, // Password
+        { wch: 30 }, // Email
+        { wch: 18 }, // Phone number
+        { wch: 35 }  // Notes
+      ];
+
+      // Tạo workbook và gắn sheet vào
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Game Accounts");
+
+      // Tải file về máy
+      const today = new Date().toISOString().slice(0, 10);
+      const fileName = `Danh_sach_tai_khoan_game_${today}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      showToast(`Đã xuất thành công ${activeList.length} tài khoản ra file Excel!`);
+    }
+
+    // ==================== NHẬP TỪ EXCEL ====================
     function handleExcelUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -387,7 +484,8 @@
                 password: col.p !== -1 ? String(row[col.p] || '').trim() : '',
                 email: col.e !== -1 ? String(row[col.e] || '').trim() : '',
                 phone: col.ph !== -1 ? String(row[col.ph] || '').trim() : '',
-                notes: col.n !== -1 ? String(row[col.n] || '').trim() : ''
+                notes: col.n !== -1 ? String(row[col.n] || '').trim() : '',
+                deleted: false
               });
               added++;
             }
@@ -411,7 +509,8 @@
     function updateGameFilter() {
       const select = document.getElementById('gameFilterSelect');
       const val = select.value;
-      const games = [...new Set(accounts.map(a => a.game).filter(Boolean))].sort();
+      const activeList = accounts.filter(a => !a.deleted);
+      const games = [...new Set(activeList.map(a => a.game).filter(Boolean))].sort();
       select.innerHTML = '<option value="ALL">Tất cả Game</option>';
       games.forEach(g => {
         const opt = document.createElement('option');
@@ -421,6 +520,11 @@
       select.value = val;
     }
 
+    function updateTrashCount() {
+      const trashCount = accounts.filter(a => a.deleted).length;
+      document.getElementById('trashCountBadge').innerText = trashCount;
+    }
+
     function renderAccounts() {
       const grid = document.getElementById('accountsGrid');
       const empty = document.getElementById('emptyState');
@@ -428,6 +532,7 @@
       const fg = document.getElementById('gameFilterSelect').value;
 
       const filtered = accounts.filter(a => {
+        if (a.deleted) return false;
         const mg = (fg === 'ALL') || (a.game === fg);
         const mq = !q || a.game.toLowerCase().includes(q) || a.user.toLowerCase().includes(q) || (a.email && a.email.toLowerCase().includes(q));
         return mg && mq;
@@ -457,8 +562,8 @@
                   <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 rounded-lg transition">
                     <i data-lucide="edit" class="w-4 h-4"></i>
                   </button>
-                  <button onclick="deleteAccount('${a.id}')" title="Xóa" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-700/60 rounded-lg transition">
-                    <i data-lucide="trash" class="w-4 h-4"></i>
+                  <button onclick="moveToTrash('${a.id}')" title="Bỏ vào thùng rác" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-700/60 rounded-lg transition">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                   </button>
                 </div>
               </div>
@@ -553,7 +658,6 @@
       });
     }
 
-    // MỞ MODAL THÊM / SỬA (ĐÃ SỬA HOÀN TOÀN)
     function openModal(editId = null) {
       const modal = document.getElementById('accountModal');
       const title = document.getElementById('modalTitle');
@@ -577,7 +681,6 @@
         document.getElementById('editAccountId').value = '';
       }
 
-      // Đảm bảo mở hiển thị modal
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       lucide.createIcons();
@@ -611,7 +714,7 @@
           accounts[idx] = { ...accounts[idx], ...data };
         }
       } else {
-        accounts.unshift({ id: 'acc_' + Date.now(), ...data });
+        accounts.unshift({ id: 'acc_' + Date.now(), ...data, deleted: false });
       }
 
       await pushToCloud();
@@ -621,13 +724,105 @@
       showToast('Đã lưu và đồng bộ lên đám mây!');
     }
 
-    async function deleteAccount(id) {
-      if (confirm('Xóa tài khoản này khỏi đám mây?')) {
-        accounts = accounts.filter(a => a.id !== id);
+    async function moveToTrash(id) {
+      const idx = accounts.findIndex(a => a.id === id);
+      if (idx !== -1) {
+        accounts[idx].deleted = true;
+        accounts[idx].deletedAt = new Date().toISOString();
         await pushToCloud();
         updateGameFilter();
         renderAccounts();
-        showToast('Đã xóa.');
+        showToast('Đã chuyển tài khoản vào Thùng Rác.');
+      }
+    }
+
+    function openTrashModal() {
+      renderTrashList();
+      const modal = document.getElementById('trashModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeTrashModal() {
+      const modal = document.getElementById('trashModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function renderTrashList() {
+      const trashList = document.getElementById('trashList');
+      const emptyNotice = document.getElementById('emptyTrashNotice');
+      const emptyBtn = document.getElementById('emptyTrashBtn');
+      const deletedAccounts = accounts.filter(a => a.deleted);
+
+      if (deletedAccounts.length === 0) {
+        trashList.innerHTML = '';
+        emptyNotice.classList.remove('hidden');
+        emptyBtn.classList.add('hidden');
+        return;
+      }
+
+      emptyNotice.classList.add('hidden');
+      emptyBtn.classList.remove('hidden');
+
+      trashList.innerHTML = deletedAccounts.map(a => `
+        <div class="bg-cyber-900 border border-slate-700/80 rounded-xl p-3 flex items-center justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-sm text-cyan-400 font-gaming truncate">${escapeHtml(a.game)}</span>
+              <span class="text-xs text-slate-300 font-mono truncate">(${escapeHtml(a.user)})</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5 truncate">${a.email ? escapeHtml(a.email) : (a.notes ? escapeHtml(a.notes) : 'Không có ghi chú')}</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="restoreAccount('${a.id}')" title="Khôi phục tài khoản"
+              class="px-2.5 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-medium flex items-center gap-1 transition">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Khôi phục</span>
+            </button>
+            <button onclick="permanentlyDeleteAccount('${a.id}')" title="Xóa vĩnh viễn"
+              class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition">
+              <i data-lucide="trash" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    async function restoreAccount(id) {
+      const idx = accounts.findIndex(a => a.id === id);
+      if (idx !== -1) {
+        accounts[idx].deleted = false;
+        delete accounts[idx].deletedAt;
+        await pushToCloud();
+        renderTrashList();
+        updateGameFilter();
+        renderAccounts();
+        showToast('Đã khôi phục tài khoản về màn hình chính!');
+      }
+    }
+
+    async function permanentlyDeleteAccount(id) {
+      if (confirm('Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản này? Thao tác này không thể hoàn tác.')) {
+        accounts = accounts.filter(a => a.id !== id);
+        await pushToCloud();
+        renderTrashList();
+        updateGameFilter();
+        renderAccounts();
+        showToast('Đã xóa vĩnh viễn tài khoản.');
+      }
+    }
+
+    async function emptyTrashConfirm() {
+      if (confirm('CẢNH BÁO: Bạn có muốn xóa sạch toàn bộ tài khoản trong thùng rác không?')) {
+        accounts = accounts.filter(a => !a.deleted);
+        await pushToCloud();
+        renderTrashList();
+        updateGameFilter();
+        renderAccounts();
+        showToast('Đã dọn sạch thùng rác.');
       }
     }
 
