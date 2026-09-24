@@ -2,8 +2,13 @@
 <html lang="vi" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Account Vault - Game & Social</title>
+  
+  <!-- FAVICON TRÊN ĐẦU TAB TRÌNH DUYỆT (GAME VAULT SHIELD) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23090d16'/%3E%3Cpath d='M32 10 L50 18 C50 34 42 48 32 54 C22 48 14 34 14 18 Z' fill='none' stroke='url(%23g)' stroke-width='4' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='28' r='5' fill='%2306b6d4'/%3E%3Cpath d='M32 33 V42' stroke='%2306b6d4' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='35' cy='38' r='2' fill='%238b5cf6'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#090d16">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
@@ -35,24 +40,28 @@
   </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #f1f5f9; }
+    body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
     .font-gaming { font-family: 'Chakra Petch', sans-serif; }
     .neon-glow:hover { box-shadow: 0 0 20px rgba(139, 92, 246, 0.35); }
+    /* Tránh tự động zoom phiền phức trên trình duyệt di động iOS/Android */
+    @media screen and (max-width: 768px) {
+      input, select, textarea { font-size: 16px !important; }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
   <!-- MÀN HÌNH KHÓA & ĐỒNG BỘ ĐÁM MÂY -->
   <div id="lockScreen" class="fixed inset-0 z-50 bg-[#090d16] flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-cyber-800 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl relative">
-      <div class="text-center mb-6">
-        <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-          <i data-lucide="cloud-lock" class="w-9 h-9 text-white"></i>
+    <div class="w-full max-w-md bg-cyber-800 border border-slate-700/80 rounded-2xl p-5 sm:p-8 shadow-2xl relative">
+      <div class="text-center mb-5 sm:mb-6">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-2.5 sm:mb-3 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <i data-lucide="cloud-lock" class="w-7 h-7 sm:w-9 sm:h-9 text-white"></i>
         </div>
-        <h1 class="text-2xl font-bold font-gaming tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
+        <h1 class="text-xl sm:text-2xl font-bold font-gaming tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">
           ACCOUNT VAULT
         </h1>
-        <p id="lockScreenSubtext" class="text-xs text-slate-400 mt-1">Đang kiểm tra phiên đăng nhập...</p>
+        <p id="lockScreenSubtext" class="text-[11px] sm:text-xs text-slate-400 mt-1">Đang kiểm tra phiên đăng nhập...</p>
       </div>
 
       <div id="authTabs" class="flex border-b border-slate-700 mb-4 text-xs font-semibold">
@@ -60,7 +69,7 @@
         <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-slate-400 hover:text-white">Đăng Ký</button>
       </div>
 
-      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3.5">
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
         <div>
           <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Tài khoản Email</label>
           <input type="email" id="cloudEmail" required placeholder="name@example.com"
@@ -79,55 +88,55 @@
           </label>
           <input type="password" id="masterPasswordInput" required placeholder="Khóa bảo vệ kho dữ liệu"
             class="w-full px-3.5 py-2.5 bg-cyber-900 border border-emerald-500/50 rounded-xl text-white text-sm focus:border-emerald-400 focus:outline-none">
-          <p class="text-[11px] text-slate-400 mt-1 leading-snug">Web tự động ghi nhớ trên máy này để vào thẳng khi F5.</p>
+          <p class="text-[10.5px] text-slate-400 mt-1 leading-snug">Web tự động ghi nhớ trên máy này để vào thẳng khi F5.</p>
         </div>
 
         <p id="authErrorMsg" class="text-xs text-rose-400 hidden"></p>
 
-        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2">
+        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl text-sm transition flex items-center justify-center gap-2 active:scale-95">
           <span>Đăng Nhập & Đồng Bộ</span>
         </button>
       </form>
     </div>
   </div>
 
-  <!-- THANH ĐIỀU HƯỚNG CHÍNH -->
-  <header class="border-b border-slate-800 bg-cyber-800/80 backdrop-blur-md sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center">
-          <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+  <!-- THANH ĐIỀU HƯỚNG TỐI ƯU CHO MOBILE & DESKTOP -->
+  <header class="border-b border-slate-800 bg-cyber-800/90 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shrink-0">
+          <i data-lucide="shield-check" class="w-5 h-5 sm:w-6 sm:h-6 text-white"></i>
         </div>
-        <div>
-          <span class="text-lg font-bold font-gaming text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 leading-none block">
+        <div class="min-w-0">
+          <span class="text-base sm:text-lg font-bold font-gaming text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 leading-none block truncate">
             ACCOUNT VAULT
           </span>
-          <span id="userStatusTag" class="text-[11px] text-emerald-400 flex items-center gap-1">
+          <span id="userStatusTag" class="text-[10px] sm:text-[11px] text-emerald-400 flex items-center gap-1 mt-0.5">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Game & Social Cloud
+            Cloud Sync
           </span>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-2.5">
+      <div class="flex items-center gap-1 sm:gap-2">
         <!-- Xuất Excel -->
-        <button onclick="exportToExcel()" title="Tải toàn bộ tài khoản ra file Excel"
-          class="px-2.5 sm:px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+        <button onclick="exportToExcel()" title="Xuất Excel"
+          class="p-2 sm:px-3 sm:py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
           <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
           <span class="hidden sm:inline">Xuất Excel</span>
         </button>
 
         <!-- Nhập Excel -->
-        <label for="excelFileInput" title="Nhập tài khoản từ file Excel"
-          class="cursor-pointer px-2.5 sm:px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+        <label for="excelFileInput" title="Nhập Excel"
+          class="cursor-pointer p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
           <i data-lucide="upload" class="w-4 h-4 text-cyan-400"></i>
           <span class="hidden sm:inline">Nhập Excel</span>
         </label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
 
         <!-- Thùng Rác -->
-        <button onclick="openTrashModal()" title="Xem thùng rác"
-          class="px-2.5 sm:px-3 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+        <button onclick="openTrashModal()" title="Thùng Rác"
+          class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
           <i data-lucide="trash-2" class="w-4 h-4 text-amber-400"></i>
           <span class="hidden md:inline">Thùng Rác</span>
           <span id="trashCountBadge" class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-amber-500/30">0</span>
@@ -135,7 +144,7 @@
 
         <!-- Đăng xuất -->
         <button onclick="lockVault()" title="Đăng xuất"
-          class="px-2.5 sm:px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+          class="p-2 sm:px-3 sm:py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
           <i data-lucide="log-out" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Đăng xuất</span>
         </button>
@@ -144,67 +153,66 @@
   </header>
 
   <!-- NỘI DUNG CHÍNH -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-6">
 
-    <!-- Bộ lọc danh mục (Tabs) -->
-    <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
+    <!-- Bộ lọc danh mục (Tabs: Vuốt ngang mượt trên điện thoại) -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 no-scrollbar">
       <button onclick="setCategoryTab('ALL')" id="tabCatAll"
-        class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition">
-        <i data-lucide="layers" class="w-4 h-4"></i>
+        class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition">
+        <i data-lucide="layers" class="w-3.5 h-3.5"></i>
         <span>Tất Cả</span>
       </button>
       <button onclick="setCategoryTab('GAME')" id="tabCatGame"
-        class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
-        <i data-lucide="gamepad-2" class="w-4 h-4 text-purple-400"></i>
+        class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
+        <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-purple-400"></i>
         <span>Game</span>
       </button>
       <button onclick="setCategoryTab('SOCIAL')" id="tabCatSocial"
-        class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
-        <i data-lucide="share-2" class="w-4 h-4 text-pink-400"></i>
+        class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
+        <i data-lucide="share-2" class="w-3.5 h-3.5 text-pink-400"></i>
         <span>Mạng Xã Hội</span>
       </button>
     </div>
 
-    <!-- Thanh tìm kiếm và nút Thêm -->
-    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-      <div class="flex flex-1 flex-col sm:flex-row gap-2.5">
+    <!-- Thanh tìm kiếm & Thêm mới -->
+    <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center justify-between">
+      <div class="flex flex-1 flex-col sm:flex-row gap-2">
         <div class="relative flex-1">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
-          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm theo tên nền tảng, user, email, SĐT..."
+          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm kiếm tài khoản..."
             class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
         </div>
-        <select id="platformFilterSelect" onchange="renderAccounts()" class="px-3.5 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-300">
+        <select id="platformFilterSelect" onchange="renderAccounts()" class="px-3 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-slate-300 focus:outline-none">
           <option value="ALL">Tất cả Nền tảng</option>
         </select>
       </div>
-      <button onclick="openModal()" class="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition active:scale-95">
+      <button onclick="openModal()" class="w-full sm:w-auto px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shadow-cyan-500/10">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
         <span>Thêm Tài Khoản</span>
       </button>
     </div>
 
-    <div id="accountsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <div id="accountsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"></div>
 
     <div id="emptyState" class="hidden text-center py-16">
       <i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-500 mb-3"></i>
       <h3 class="text-base font-semibold text-slate-300">Chưa có tài khoản nào</h3>
-      <p class="text-xs text-slate-500 mt-1 mb-4">Bấm Thêm Tài Khoản hoặc Nhập Excel để lưu trữ ngay.</p>
+      <p class="text-xs text-slate-500 mt-1 mb-4">Bấm Thêm Tài Khoản hoặc Nhập Excel để bắt đầu.</p>
     </div>
   </main>
 
   <!-- MODAL THÊM / SỬA TÀI KHOẢN -->
-  <div id="accountModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="w-full max-w-lg bg-cyber-800 border border-slate-700 rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
-        <h3 id="modalTitle" class="text-lg font-bold font-gaming text-cyan-400">Thêm Tài Khoản</h3>
-        <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+  <div id="accountModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-lg bg-cyber-800 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-3 sm:mb-4">
+        <h3 id="modalTitle" class="text-base sm:text-lg font-bold font-gaming text-cyan-400">Thêm Tài Khoản</h3>
+        <button type="button" onclick="closeModal()" class="p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="accountModalForm" onsubmit="saveAccount(event)" class="space-y-3.5">
+      <form id="accountModalForm" onsubmit="saveAccount(event)" class="space-y-3">
         <input type="hidden" id="editAccountId">
         <input type="hidden" id="accCustomIconBase64">
 
-        <!-- Lựa chọn Danh mục -->
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Phân loại *</label>
           <div class="grid grid-cols-2 gap-2">
@@ -219,41 +227,41 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Tên Nền tảng / Game / MXH *</label>
-            <input type="text" id="accGame" required placeholder="VD: Facebook, Valorant, Discord..." oninput="handleGameNameInput(this.value)"
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nền tảng / Game / MXH *</label>
+            <input type="text" id="accGame" required placeholder="VD: Facebook, Valorant, Steam..." oninput="handleGameNameInput(this.value)"
               class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1">Tên tài khoản / User *</label>
-            <input type="text" id="accUser" required placeholder="Username / Tên đăng nhập"
+            <input type="text" id="accUser" required placeholder="Username / ID đăng nhập"
               class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
         </div>
 
-        <!-- TÙY CHỌN ẢNH ĐẠI DIỆN DÙNG CHUNG CHO CẢ GAME -->
-        <div class="p-3 bg-cyber-900/80 rounded-xl border border-slate-700/60 space-y-2">
+        <!-- TÙY CHỌN ẢNH ĐẠI DIỆN DÙNG CHUNG -->
+        <div class="p-2.5 sm:p-3 bg-cyber-900/80 rounded-xl border border-slate-700/60 space-y-2">
           <label class="block text-xs font-medium text-cyan-300 flex items-center justify-between">
-            <span>Ảnh biểu tượng (Dùng chung cho cả game này)</span>
-            <span class="text-[10px] text-slate-400 font-normal">Tải 1 lần - Mọi nick cùng game tự có</span>
+            <span>Ảnh đại diện (Dùng chung cho cả Game này)</span>
+            <span class="text-[10px] text-slate-400 font-normal">Tải 1 lần</span>
           </label>
           
           <div class="flex items-center gap-3">
-            <div id="iconPreviewBox" class="w-12 h-12 rounded-xl bg-cyber-800 border border-slate-700 flex items-center justify-center shrink-0 overflow-hidden text-slate-500">
-              <i data-lucide="image" class="w-6 h-6"></i>
+            <div id="iconPreviewBox" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-cyber-800 border border-slate-700 flex items-center justify-center shrink-0 overflow-hidden text-slate-500">
+              <i data-lucide="image" class="w-5 h-5"></i>
             </div>
             <div class="flex-1 space-y-1.5">
               <div class="flex items-center gap-2">
-                <label for="accIconFileInput" class="cursor-pointer px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
+                <label for="accIconFileInput" class="cursor-pointer px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
                   <i data-lucide="upload" class="w-3.5 h-3.5 text-cyan-400"></i>
-                  <span>Chọn ảnh từ máy</span>
+                  <span>Chọn ảnh máy</span>
                 </label>
                 <input type="file" id="accIconFileInput" accept="image/*" class="hidden" onchange="handleIconFileSelect(event)">
-                <button type="button" onclick="clearCustomIcon()" id="removeIconBtn" class="text-xs text-rose-400 hover:underline hidden">Xóa ảnh</button>
+                <button type="button" onclick="clearCustomIcon()" id="removeIconBtn" class="text-xs text-rose-400 hover:underline hidden">Xóa</button>
               </div>
               <input type="url" id="accIconUrl" placeholder="Hoặc dán Link ảnh online..." oninput="handleIconUrlInput(this.value)"
-                class="w-full px-2.5 py-1.5 bg-cyber-800 border border-slate-700 rounded-lg text-xs text-white focus:border-cyan-500">
+                class="w-full px-2.5 py-1 bg-cyber-800 border border-slate-700 rounded-lg text-xs text-white focus:border-cyan-500">
             </div>
           </div>
         </div>
@@ -262,13 +270,13 @@
           <label class="block text-xs font-medium text-slate-300 mb-1">Mật khẩu *</label>
           <div class="relative">
             <input type="password" id="accPass" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm font-mono text-white focus:border-cyan-500 pr-10">
-            <button type="button" onclick="toggleModalPassVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-white">
+            <button type="button" onclick="toggleModalPassVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-white p-0.5">
               <i data-lucide="eye" id="modalPassEyeIcon" class="w-4 h-4"></i>
             </button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1">Email liên kết</label>
             <input type="text" id="accEmail" placeholder="example@gmail.com"
@@ -282,51 +290,51 @@
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (2FA code, link profile, server...)</label>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (2FA code, link, server...)</label>
           <textarea id="accNotes" rows="2" placeholder="Ghi chú thêm..."
             class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500"></textarea>
         </div>
 
-        <div class="flex justify-end gap-2 pt-3 border-t border-slate-700">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-sm hover:bg-slate-700">Hủy</button>
-          <button type="submit" id="saveAccountBtn" class="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm">Lưu & Đẩy Lên Cloud</button>
+        <div class="flex justify-end gap-2 pt-2.5 border-t border-slate-700">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs sm:text-sm hover:bg-slate-700">Hủy</button>
+          <button type="submit" id="saveAccountBtn" class="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-xs sm:text-sm">Lưu & Đẩy Lên Cloud</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL THÙNG RÁC -->
-  <div id="trashModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="w-full max-w-2xl bg-cyber-800 border border-slate-700 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh]">
-      <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
+  <div id="trashModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
+    <div class="w-full max-w-2xl bg-cyber-800 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col max-h-[88vh]">
+      <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-3">
         <div class="flex items-center gap-2">
           <i data-lucide="trash-2" class="w-5 h-5 text-amber-400"></i>
-          <h3 class="text-lg font-bold font-gaming text-amber-400">Thùng Rác Tài Khoản</h3>
+          <h3 class="text-base sm:text-lg font-bold font-gaming text-amber-400">Thùng Rác Tài Khoản</h3>
         </div>
-        <button type="button" onclick="closeTrashModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button type="button" onclick="closeTrashModal()" class="p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
       <div class="flex items-center justify-between mb-3 text-xs">
-        <span class="text-slate-400">Tài khoản ở đây sẽ không hiển thị ở màn hình chính.</span>
-        <button id="emptyTrashBtn" onclick="emptyTrashConfirm()" class="text-rose-400 hover:text-rose-300 hover:underline font-semibold shrink-0 ml-2 hidden">
-          Dọn sạch thùng rác
+        <span class="text-slate-400 text-[11px] sm:text-xs">Tài khoản ở đây có thể khôi phục lại bất kỳ lúc nào.</span>
+        <button id="emptyTrashBtn" onclick="emptyTrashConfirm()" class="text-rose-400 hover:text-rose-300 font-semibold shrink-0 ml-2 hidden">
+          Dọn sạch
         </button>
       </div>
 
-      <div id="trashList" class="overflow-y-auto space-y-2.5 flex-1 pr-1"></div>
+      <div id="trashList" class="overflow-y-auto space-y-2 flex-1 pr-0.5"></div>
 
       <div id="emptyTrashNotice" class="hidden text-center py-10">
         <i data-lucide="check-circle" class="w-10 h-10 mx-auto text-slate-600 mb-2"></i>
-        <p class="text-sm text-slate-400">Thùng rác đang trống.</p>
+        <p class="text-xs sm:text-sm text-slate-400">Thùng rác đang trống.</p>
       </div>
 
-      <div class="flex justify-end pt-4 border-t border-slate-700 mt-4">
-        <button type="button" onclick="closeTrashModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium">Đóng</button>
+      <div class="flex justify-end pt-3 border-t border-slate-700 mt-3">
+        <button type="button" onclick="closeTrashModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs sm:text-sm font-medium">Đóng</button>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="fixed bottom-5 right-5 z-50 bg-cyber-700 border border-slate-600 text-white px-4 py-2 rounded-xl text-sm transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+  <div id="toast" class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 bg-cyber-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none shadow-2xl">
     <span id="toastMsg">Thành công</span>
   </div>
 
@@ -349,26 +357,22 @@
     let currentUser = null;
     let masterKey = null;
     let accounts = [];
-    let platformIcons = {}; // Kho lưu logo theo tên Game: { "valorant": "data:image...", "facebook": "https://..." }
+    let platformIcons = {};
     let isRegisterMode = false;
     let currentCategoryFilter = 'ALL';
 
-    // Tìm icon dùng chung theo tên Game
     function getPlatformSharedIcon(gameName) {
       if (!gameName) return '';
       const key = gameName.trim().toLowerCase();
       return platformIcons[key] || '';
     }
 
-    // Hiển thị Icon trên từng thẻ
     function getPlatformIcon(item) {
-      // 1. Kiểm tra trong kho ảnh chung của Game này
       const sharedImg = getPlatformSharedIcon(item.game);
       if (sharedImg) {
         return `<img src="${sharedImg}" alt="${escapeHtml(item.game)}" class="w-8 h-8 rounded-xl object-cover border border-slate-700 shrink-0" onerror="this.style.display='none'">`;
       }
 
-      // 2. Tự động nhận diện logo hệ thống
       const n = (item.game || '').toLowerCase().trim();
 
       if (n.includes('facebook') || n === 'fb') {
@@ -412,7 +416,6 @@
         </div>`;
       }
 
-      // 3. Chữ cái mặc định
       const firstLetter = (item.game || 'G').trim().charAt(0).toUpperCase();
       const isSoc = item.category === 'SOCIAL';
       const bgGrad = isSoc ? 'from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/40' : 'from-cyan-500/20 to-purple-500/20 text-cyan-400 border-cyan-500/40';
@@ -422,7 +425,6 @@
       </div>`;
     }
 
-    // Tự động kiểm tra xem Game vừa gõ đã có icon chung chưa
     function handleGameNameInput(val) {
       const existing = getPlatformSharedIcon(val);
       if (existing) {
@@ -479,7 +481,7 @@
         box.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
         removeBtn.classList.remove('hidden');
       } else {
-        box.innerHTML = `<i data-lucide="image" class="w-6 h-6"></i>`;
+        box.innerHTML = `<i data-lucide="image" class="w-5 h-5"></i>`;
         removeBtn.classList.add('hidden');
         lucide.createIcons();
       }
@@ -527,9 +529,9 @@
       tabs.forEach(t => {
         const btn = document.getElementById(t.id);
         if (t.cat === category) {
-          btn.className = "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition";
+          btn.className = "shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition";
         } else {
-          btn.className = "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition";
+          btn.className = "shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition";
         }
       });
 
@@ -587,7 +589,6 @@
           if (!decrypted) throw new Error();
           
           const parsed = JSON.parse(decrypted);
-          // Hỗ trợ cấu trúc lưu trữ mới (kèm kho icon)
           if (Array.isArray(parsed)) {
             accounts = parsed;
             platformIcons = {};
@@ -596,7 +597,6 @@
             platformIcons = parsed.platformIcons || {};
           }
 
-          // Cập nhật lại kho icon từ tài khoản cũ nếu có
           accounts.forEach(a => {
             if (!a.category) a.category = 'GAME';
             if (a.iconBase64 || a.iconUrl) {
@@ -646,14 +646,14 @@
       document.getElementById('accountsGrid').innerHTML = '';
       document.getElementById('lockScreen').classList.remove('hidden');
       document.getElementById('lockScreenSubtext').innerText = 'Đã đăng xuất tài khoản';
-      showToast('Đã đăng xuất và xóa phiên lưu trữ.');
+      showToast('Đã đăng xuất.');
     }
 
     function exportToExcel() {
       const activeList = accounts.filter(a => !a.deleted);
 
       if (activeList.length === 0) {
-        showToast('Kho dữ liệu đang trống, không có gì để xuất!');
+        showToast('Kho dữ liệu đang trống!');
         return;
       }
 
@@ -685,7 +685,7 @@
       const fileName = `Danh_sach_tai_khoan_${today}.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
-      showToast(`Đã xuất thành công ${activeList.length} tài khoản ra file Excel!`);
+      showToast(`Đã xuất ${activeList.length} tài khoản!`);
     }
 
     function handleExcelUpload(event) {
@@ -756,7 +756,7 @@
             await pushToCloud();
             updatePlatformFilter();
             renderAccounts();
-            showToast(`Đã tải lên đám mây ${added} tài khoản!`);
+            showToast(`Đã tải lên ${added} tài khoản!`);
           }
         } catch (err) {
           showToast('Lỗi đọc Excel: ' + err.message);
@@ -823,14 +823,14 @@
         const iconHtml = getPlatformIcon(a);
 
         return `
-          <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-4 flex flex-col justify-between neon-glow transition">
+          <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between neon-glow transition">
             <div>
-              <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center justify-between mb-2.5 sm:mb-3">
                 <div class="flex items-center gap-2.5 min-w-0">
                   ${iconHtml}
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5">
-                      <span class="font-bold text-base text-cyan-400 font-gaming truncate">${safeGame}</span>
+                      <span class="font-bold text-sm sm:text-base text-cyan-400 font-gaming truncate">${safeGame}</span>
                       <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border shrink-0 ${isSocial ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30'}">
                         ${isSocial ? 'MXH' : 'GAME'}
                       </span>
@@ -838,35 +838,35 @@
                   </div>
                 </div>
                 <div class="flex gap-1 shrink-0">
-                  <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 rounded-lg transition">
+                  <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 rounded-lg transition active:scale-90">
                     <i data-lucide="edit" class="w-4 h-4"></i>
                   </button>
-                  <button onclick="moveToTrash('${a.id}')" title="Bỏ vào thùng rác" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-700/60 rounded-lg transition">
+                  <button onclick="moveToTrash('${a.id}')" title="Bỏ vào thùng rác" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-700/60 rounded-lg transition active:scale-90">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                   </button>
                 </div>
               </div>
 
-              <div class="bg-cyber-900 p-2.5 rounded-xl border border-slate-800 text-xs space-y-1.5">
+              <div class="bg-cyber-900 p-2.5 rounded-xl border border-slate-800 text-xs space-y-2">
                 <div class="flex justify-between items-center">
-                  <span class="text-slate-400">User:</span>
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-mono text-slate-200 select-all">${safeUser}</span>
-                    <button onclick="copyToClipboard('${safeUser}', 'Tài khoản')" title="Sao chép User" class="text-slate-500 hover:text-white p-0.5">
+                  <span class="text-slate-400 text-[11px] sm:text-xs">User:</span>
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="font-mono text-slate-200 select-all truncate max-w-[140px] sm:max-w-[180px]">${safeUser}</span>
+                    <button onclick="copyToClipboard('${safeUser}', 'Tài khoản')" title="Sao chép User" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
                       <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                     </button>
                   </div>
                 </div>
 
                 <div class="flex justify-between items-center">
-                  <span class="text-slate-400">Pass:</span>
-                  <div class="flex items-center gap-1.5">
+                  <span class="text-slate-400 text-[11px] sm:text-xs">Pass:</span>
+                  <div class="flex items-center gap-1">
                     <input type="password" id="pass_field_${a.id}" value="${safePass}" readonly
-                      class="bg-transparent text-right font-mono text-cyan-300 focus:outline-none w-28 text-xs select-all">
-                    <button onclick="toggleCardPass('${a.id}')" title="Ẩn/Hiện Mật khẩu" class="text-slate-400 hover:text-white p-0.5">
+                      class="bg-transparent text-right font-mono text-cyan-300 focus:outline-none w-24 sm:w-28 text-xs select-all">
+                    <button onclick="toggleCardPass('${a.id}')" title="Ẩn/Hiện Mật khẩu" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
                       <i data-lucide="eye" id="card_eye_${a.id}" class="w-3.5 h-3.5"></i>
                     </button>
-                    <button onclick="copyToClipboard('${safePass}', 'Mật khẩu')" title="Sao chép Pass" class="text-slate-500 hover:text-white p-0.5">
+                    <button onclick="copyToClipboard('${safePass}', 'Mật khẩu')" title="Sao chép Pass" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
                       <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                     </button>
                   </div>
@@ -874,10 +874,10 @@
 
                 ${safeEmail ? `
                   <div class="flex justify-between items-center">
-                    <span class="text-slate-400">Mail:</span>
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-slate-300 select-all">${safeEmail}</span>
-                      <button onclick="copyToClipboard('${safeEmail}', 'Email')" title="Sao chép Email" class="text-slate-500 hover:text-white p-0.5">
+                    <span class="text-slate-400 text-[11px] sm:text-xs">Mail:</span>
+                    <div class="flex items-center gap-1.5 min-w-0">
+                      <span class="text-slate-300 select-all truncate max-w-[140px] sm:max-w-[180px]">${safeEmail}</span>
+                      <button onclick="copyToClipboard('${safeEmail}', 'Email')" title="Sao chép Email" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
                         <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                       </button>
                     </div>
@@ -885,17 +885,17 @@
 
                 ${safePhone ? `
                   <div class="flex justify-between items-center">
-                    <span class="text-slate-400">SĐT:</span>
+                    <span class="text-slate-400 text-[11px] sm:text-xs">SĐT:</span>
                     <div class="flex items-center gap-1.5">
                       <span class="text-slate-300 select-all">${safePhone}</span>
-                      <button onclick="copyToClipboard('${safePhone}', 'Số điện thoại')" title="Sao chép SĐT" class="text-slate-500 hover:text-white p-0.5">
+                      <button onclick="copyToClipboard('${safePhone}', 'Số điện thoại')" title="Sao chép SĐT" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
                         <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                       </button>
                     </div>
                   </div>` : ''}
               </div>
 
-              ${safeNotes ? `<p class="text-[11px] text-slate-400 mt-2 bg-slate-900/40 p-1.5 rounded border border-slate-800">${safeNotes}</p>` : ''}
+              ${safeNotes ? `<p class="text-[11px] text-slate-400 mt-2 bg-slate-900/40 p-1.5 rounded border border-slate-800 break-words">${safeNotes}</p>` : ''}
             </div>
           </div>
         `;
@@ -962,7 +962,6 @@
           document.getElementById('accPhone').value = item.phone || '';
           document.getElementById('accNotes').value = item.notes || '';
 
-          // Lấy icon chung của Game
           const existingImg = getPlatformSharedIcon(item.game);
           if (existingImg) {
             if (existingImg.startsWith('data:image')) {
@@ -1011,7 +1010,6 @@
       const iconBase64 = document.getElementById('accCustomIconBase64').value;
       const iconUrl = document.getElementById('accIconUrl').value.trim();
 
-      // CẬP NHẬT KHO ICON CHUNG CHO TOÀN BỘ GAME / NỀN TẢNG NÀY
       const platformKey = gameName.toLowerCase();
       if (iconBase64 || iconUrl) {
         platformIcons[platformKey] = iconBase64 || iconUrl;
@@ -1040,7 +1038,7 @@
       closeModal();
       updatePlatformFilter();
       renderAccounts();
-      showToast('Đã lưu và cập nhật ảnh cho toàn bộ tài khoản cùng game!');
+      showToast('Đã lưu dữ liệu!');
     }
 
     async function moveToTrash(id) {
@@ -1051,7 +1049,7 @@
         await pushToCloud();
         updatePlatformFilter();
         renderAccounts();
-        showToast('Đã chuyển tài khoản vào Thùng Rác.');
+        showToast('Đã chuyển vào Thùng Rác.');
       }
     }
 
@@ -1086,22 +1084,22 @@
       emptyBtn.classList.remove('hidden');
 
       trashList.innerHTML = deletedAccounts.map(a => `
-        <div class="bg-cyber-900 border border-slate-700/80 rounded-xl p-3 flex items-center justify-between gap-3">
+        <div class="bg-cyber-900 border border-slate-700/80 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2">
           <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded border ${a.category === 'SOCIAL' ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30'}">
+            <div class="flex items-center gap-1.5 truncate">
+              <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border shrink-0 ${a.category === 'SOCIAL' ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30'}">
                 ${a.category === 'SOCIAL' ? 'MXH' : 'GAME'}
               </span>
-              <span class="font-bold text-sm text-cyan-400 font-gaming truncate">${escapeHtml(a.game)}</span>
-              <span class="text-xs text-slate-300 font-mono truncate">(${escapeHtml(a.user)})</span>
+              <span class="font-bold text-xs sm:text-sm text-cyan-400 font-gaming truncate">${escapeHtml(a.game)}</span>
+              <span class="text-[11px] text-slate-300 font-mono truncate">(${escapeHtml(a.user)})</span>
             </div>
-            <p class="text-[11px] text-slate-500 mt-0.5 truncate">${a.email ? escapeHtml(a.email) : (a.notes ? escapeHtml(a.notes) : 'Không có ghi chú')}</p>
+            <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">${a.email ? escapeHtml(a.email) : (a.notes ? escapeHtml(a.notes) : 'Không có ghi chú')}</p>
           </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <button onclick="restoreAccount('${a.id}')" title="Khôi phục tài khoản"
-              class="px-2.5 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-medium flex items-center gap-1 transition">
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="restoreAccount('${a.id}')" title="Khôi phục"
+              class="px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-medium flex items-center gap-1 transition">
               <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-emerald-400"></i>
-              <span>Khôi phục</span>
+              <span class="hidden sm:inline">Khôi phục</span>
             </button>
             <button onclick="permanentlyDeleteAccount('${a.id}')" title="Xóa vĩnh viễn"
               class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition">
@@ -1122,23 +1120,23 @@
         renderTrashList();
         updatePlatformFilter();
         renderAccounts();
-        showToast('Đã khôi phục tài khoản về màn hình chính!');
+        showToast('Đã khôi phục tài khoản!');
       }
     }
 
     async function permanentlyDeleteAccount(id) {
-      if (confirm('Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản này? Thao tác này không thể hoàn tác.')) {
+      if (confirm('Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản này?')) {
         accounts = accounts.filter(a => id !== a.id);
         await pushToCloud();
         renderTrashList();
         updatePlatformFilter();
         renderAccounts();
-        showToast('Đã xóa vĩnh viễn tài khoản.');
+        showToast('Đã xóa vĩnh viễn.');
       }
     }
 
     async function emptyTrashConfirm() {
-      if (confirm('CẢNH BÁO: Bạn có muốn xóa sạch toàn bộ tài khoản trong thùng rác không?')) {
+      if (confirm('CẢNH BÁO: Xóa sạch toàn bộ thùng rác?')) {
         accounts = accounts.filter(a => !a.deleted);
         await pushToCloud();
         renderTrashList();
