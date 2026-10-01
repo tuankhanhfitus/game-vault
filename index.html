@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Account Vault - Game & Social</title>
+  <title>Account Vault - Secure Cloud</title>
   
-  <!-- FAVICON TRÊN ĐẦU TAB TRÌNH DUYỆT (GAME VAULT SHIELD) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2306b6d4'/%3E%3Cstop offset='100%25' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23090d16'/%3E%3Cpath d='M32 10 L50 18 C50 34 42 48 32 54 C22 48 14 34 14 18 Z' fill='none' stroke='url(%23g)' stroke-width='4' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='28' r='5' fill='%2306b6d4'/%3E%3Cpath d='M32 33 V42' stroke='%2306b6d4' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='35' cy='38' r='2' fill='%238b5cf6'/%3E%3C/svg%3E">
   <meta name="theme-color" content="#090d16">
 
@@ -14,7 +13,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
-  <!-- Firebase SDKs (Compat version) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
@@ -43,7 +42,6 @@
     body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
     .font-gaming { font-family: 'Chakra Petch', sans-serif; }
     .neon-glow:hover { box-shadow: 0 0 20px rgba(139, 92, 246, 0.35); }
-    /* Tránh tự động zoom phiền phức trên trình duyệt di động iOS/Android */
     @media screen and (max-width: 768px) {
       input, select, textarea { font-size: 16px !important; }
     }
@@ -52,7 +50,7 @@
 <body class="min-h-screen flex flex-col antialiased">
 
   <!-- MÀN HÌNH KHÓA & ĐỒNG BỘ ĐÁM MÂY -->
-  <div id="lockScreen" class="fixed inset-0 z-50 bg-[#090d16] flex items-center justify-center p-4">
+  <div id="lockScreen" class="fixed inset-0 z-[100] bg-[#090d16] flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-cyber-800 border border-slate-700/80 rounded-2xl p-5 sm:p-8 shadow-2xl relative">
       <div class="text-center mb-5 sm:mb-6">
         <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-2.5 sm:mb-3 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
@@ -88,7 +86,6 @@
           </label>
           <input type="password" id="masterPasswordInput" required placeholder="Khóa bảo vệ kho dữ liệu"
             class="w-full px-3.5 py-2.5 bg-cyber-900 border border-emerald-500/50 rounded-xl text-white text-sm focus:border-emerald-400 focus:outline-none">
-          <p class="text-[10.5px] text-slate-400 mt-1 leading-snug">Web tự động ghi nhớ trên máy này để vào thẳng khi F5.</p>
         </div>
 
         <p id="authErrorMsg" class="text-xs text-rose-400 hidden"></p>
@@ -100,7 +97,7 @@
     </div>
   </div>
 
-  <!-- THANH ĐIỀU HƯỚNG TỐI ƯU CHO MOBILE & DESKTOP -->
+  <!-- THANH ĐIỀU HƯỚNG -->
   <header class="border-b border-slate-800 bg-cyber-800/90 backdrop-blur-md sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
       <div class="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -119,32 +116,24 @@
       </div>
 
       <div class="flex items-center gap-1 sm:gap-2">
-        <!-- Xuất Excel -->
-        <button onclick="exportToExcel()" title="Xuất Excel"
-          class="p-2 sm:px-3 sm:py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
+        <button onclick="exportToExcel()" title="Xuất Excel" class="p-2 sm:px-3 sm:py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
           <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
           <span class="hidden sm:inline">Xuất Excel</span>
         </button>
 
-        <!-- Nhập Excel -->
-        <label for="excelFileInput" title="Nhập Excel"
-          class="cursor-pointer p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
+        <label for="excelFileInput" title="Nhập Excel" class="cursor-pointer p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
           <i data-lucide="upload" class="w-4 h-4 text-cyan-400"></i>
           <span class="hidden sm:inline">Nhập Excel</span>
         </label>
         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
 
-        <!-- Thùng Rác -->
-        <button onclick="openTrashModal()" title="Thùng Rác"
-          class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
+        <button onclick="openTrashModal()" title="Thùng Rác" class="p-2 sm:px-3 sm:py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
           <i data-lucide="trash-2" class="w-4 h-4 text-amber-400"></i>
           <span class="hidden md:inline">Thùng Rác</span>
           <span id="trashCountBadge" class="bg-amber-500/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-amber-500/30">0</span>
         </button>
 
-        <!-- Đăng xuất -->
-        <button onclick="lockVault()" title="Đăng xuất"
-          class="p-2 sm:px-3 sm:py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
+        <button onclick="lockVault()" title="Đăng xuất" class="p-2 sm:px-3 sm:py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition active:scale-95">
           <i data-lucide="log-out" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Đăng xuất</span>
         </button>
@@ -155,22 +144,19 @@
   <!-- NỘI DUNG CHÍNH -->
   <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-6">
 
-    <!-- Bộ lọc danh mục (Tabs: Vuốt ngang mượt trên điện thoại) -->
+    <!-- Bộ lọc danh mục (Tabs) -->
     <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 no-scrollbar">
-      <button onclick="setCategoryTab('ALL')" id="tabCatAll"
-        class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition">
-        <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-        <span>Tất Cả</span>
+      <button onclick="setCategoryTab('ALL')" id="tabCatAll" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition">
+        <i data-lucide="layers" class="w-3.5 h-3.5"></i> <span>Tất Cả</span>
       </button>
-      <button onclick="setCategoryTab('GAME')" id="tabCatGame"
-        class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
-        <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-purple-400"></i>
-        <span>Game</span>
+      <button onclick="setCategoryTab('GAME')" id="tabCatGame" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
+        <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-purple-400"></i> <span>Game</span>
       </button>
-      <button onclick="setCategoryTab('SOCIAL')" id="tabCatSocial"
-        class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
-        <i data-lucide="share-2" class="w-3.5 h-3.5 text-pink-400"></i>
-        <span>Mạng Xã Hội</span>
+      <button onclick="setCategoryTab('SOCIAL')" id="tabCatSocial" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
+        <i data-lucide="share-2" class="w-3.5 h-3.5 text-pink-400"></i> <span>Mạng Xã Hội</span>
+      </button>
+      <button onclick="setCategoryTab('BANK')" id="tabCatBank" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-rose-400 border border-slate-700/60 flex items-center gap-1.5 transition">
+        <i data-lucide="landmark" class="w-3.5 h-3.5 text-rose-400"></i> <span>Ngân Hàng 🔒</span>
       </button>
     </div>
 
@@ -179,8 +165,7 @@
       <div class="flex flex-1 flex-col sm:flex-row gap-2">
         <div class="relative flex-1">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
-          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm kiếm tài khoản..."
-            class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
+          <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm kiếm tài khoản..." class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
         </div>
         <select id="platformFilterSelect" onchange="renderAccounts()" class="px-3 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-slate-300 focus:outline-none">
           <option value="ALL">Tất cả Nền tảng</option>
@@ -196,10 +181,31 @@
 
     <div id="emptyState" class="hidden text-center py-16">
       <i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-500 mb-3"></i>
-      <h3 class="text-base font-semibold text-slate-300">Chưa có tài khoản nào</h3>
+      <h3 class="text-base font-semibold text-slate-300">Không có dữ liệu</h3>
       <p class="text-xs text-slate-500 mt-1 mb-4">Bấm Thêm Tài Khoản hoặc Nhập Excel để bắt đầu.</p>
     </div>
   </main>
+
+  <!-- MODAL NHẬP MÃ PIN (NGÂN HÀNG) -->
+  <div id="pinModal" class="fixed inset-0 z-[60] bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="w-full max-w-xs sm:max-w-sm bg-cyber-800 border border-rose-500/30 rounded-2xl p-6 shadow-[0_0_40px_rgba(244,63,94,0.15)] relative text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-rose-500/20 to-pink-500/20 border border-rose-500/50 flex items-center justify-center shadow-lg shadow-rose-500/20">
+        <i data-lucide="lock-keyhole" class="w-8 h-8 text-rose-400"></i>
+      </div>
+      <h3 id="pinModalTitle" class="text-lg sm:text-xl font-bold font-gaming text-rose-400 mb-1">Mở Khóa Ngân Hàng</h3>
+      <p id="pinModalSub" class="text-xs text-slate-400 mb-6 leading-relaxed">Nhập mã PIN 4 số để truy cập két tài chính.</p>
+      
+      <form onsubmit="submitPin(event)" class="space-y-4">
+        <input type="password" id="pinInput" maxlength="4" inputmode="numeric" required placeholder="••••"
+          class="w-full text-center tracking-[1em] font-mono text-2xl sm:text-3xl px-4 py-3 bg-cyber-900 border border-slate-700 rounded-xl text-white focus:border-rose-500 focus:outline-none">
+        
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closePinModal()" class="flex-1 py-3 bg-slate-800 text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-700 transition active:scale-95">Hủy</button>
+          <button type="submit" class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold transition active:scale-95">Xác Nhận</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- MODAL THÊM / SỬA TÀI KHOẢN -->
   <div id="accountModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
@@ -213,40 +219,40 @@
         <input type="hidden" id="editAccountId">
         <input type="hidden" id="accCustomIconBase64">
 
+        <!-- Lựa chọn Danh mục (Thêm Ngân Hàng) -->
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Phân loại *</label>
-          <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center justify-center gap-2 p-2 bg-cyber-900 border border-slate-700 rounded-xl cursor-pointer hover:border-cyan-500 text-xs">
+          <div class="grid grid-cols-3 gap-2">
+            <label class="flex flex-col items-center justify-center gap-1.5 p-2 bg-cyber-900 border border-slate-700 rounded-xl cursor-pointer hover:border-cyan-500 text-[10px] sm:text-xs">
               <input type="radio" name="accCategory" value="GAME" checked class="accent-cyan-500">
               <span class="flex items-center gap-1 text-slate-200"><i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-purple-400"></i> Game</span>
             </label>
-            <label class="flex items-center justify-center gap-2 p-2 bg-cyber-900 border border-slate-700 rounded-xl cursor-pointer hover:border-cyan-500 text-xs">
+            <label class="flex flex-col items-center justify-center gap-1.5 p-2 bg-cyber-900 border border-slate-700 rounded-xl cursor-pointer hover:border-cyan-500 text-[10px] sm:text-xs">
               <input type="radio" name="accCategory" value="SOCIAL" class="accent-cyan-500">
-              <span class="flex items-center gap-1 text-slate-200"><i data-lucide="share-2" class="w-3.5 h-3.5 text-pink-400"></i> Mạng Xã Hội</span>
+              <span class="flex items-center gap-1 text-slate-200"><i data-lucide="share-2" class="w-3.5 h-3.5 text-pink-400"></i> MXH</span>
+            </label>
+            <label class="flex flex-col items-center justify-center gap-1.5 p-2 bg-cyber-900 border border-rose-500/30 rounded-xl cursor-pointer hover:border-rose-500 text-[10px] sm:text-xs">
+              <input type="radio" name="accCategory" value="BANK" class="accent-rose-500">
+              <span class="flex items-center gap-1 text-rose-300 font-semibold"><i data-lucide="landmark" class="w-3.5 h-3.5 text-rose-400"></i> Ngân Hàng</span>
             </label>
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Nền tảng / Game / MXH *</label>
-            <input type="text" id="accGame" required placeholder="VD: Facebook, Valorant, Steam..." oninput="handleGameNameInput(this.value)"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tên nền tảng (VD: Vietcombank, FB) *</label>
+            <input type="text" id="accGame" required oninput="handleGameNameInput(this.value)" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Tên tài khoản / User *</label>
-            <input type="text" id="accUser" required placeholder="Username / ID đăng nhập"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Tài khoản / Số thẻ / User *</label>
+            <input type="text" id="accUser" required class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
         </div>
 
-        <!-- TÙY CHỌN ẢNH ĐẠI DIỆN DÙNG CHUNG -->
         <div class="p-2.5 sm:p-3 bg-cyber-900/80 rounded-xl border border-slate-700/60 space-y-2">
           <label class="block text-xs font-medium text-cyan-300 flex items-center justify-between">
-            <span>Ảnh đại diện (Dùng chung cho cả Game này)</span>
-            <span class="text-[10px] text-slate-400 font-normal">Tải 1 lần</span>
+            <span>Ảnh đại diện (Dùng chung cho cả nền tảng này)</span>
           </label>
-          
           <div class="flex items-center gap-3">
             <div id="iconPreviewBox" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-cyber-800 border border-slate-700 flex items-center justify-center shrink-0 overflow-hidden text-slate-500">
               <i data-lucide="image" class="w-5 h-5"></i>
@@ -254,14 +260,12 @@
             <div class="flex-1 space-y-1.5">
               <div class="flex items-center gap-2">
                 <label for="accIconFileInput" class="cursor-pointer px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
-                  <i data-lucide="upload" class="w-3.5 h-3.5 text-cyan-400"></i>
-                  <span>Chọn ảnh máy</span>
+                  <i data-lucide="upload" class="w-3.5 h-3.5 text-cyan-400"></i><span>Chọn ảnh</span>
                 </label>
                 <input type="file" id="accIconFileInput" accept="image/*" class="hidden" onchange="handleIconFileSelect(event)">
                 <button type="button" onclick="clearCustomIcon()" id="removeIconBtn" class="text-xs text-rose-400 hover:underline hidden">Xóa</button>
               </div>
-              <input type="url" id="accIconUrl" placeholder="Hoặc dán Link ảnh online..." oninput="handleIconUrlInput(this.value)"
-                class="w-full px-2.5 py-1 bg-cyber-800 border border-slate-700 rounded-lg text-xs text-white focus:border-cyan-500">
+              <input type="url" id="accIconUrl" placeholder="Hoặc dán Link ảnh online..." oninput="handleIconUrlInput(this.value)" class="w-full px-2.5 py-1 bg-cyber-800 border border-slate-700 rounded-lg text-xs text-white focus:border-cyan-500">
             </div>
           </div>
         </div>
@@ -279,20 +283,17 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
           <div>
             <label class="block text-xs font-medium text-slate-300 mb-1">Email liên kết</label>
-            <input type="text" id="accEmail" placeholder="example@gmail.com"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+            <input type="text" id="accEmail" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Số điện thoại</label>
-            <input type="text" id="accPhone" placeholder="09xxxxxxxx"
-              class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Số điện thoại / Thẻ liên kết</label>
+            <input type="text" id="accPhone" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (2FA code, link, server...)</label>
-          <textarea id="accNotes" rows="2" placeholder="Ghi chú thêm..."
-            class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500"></textarea>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Ghi chú (Smart OTP, mã PIN, số thẻ...)</label>
+          <textarea id="accNotes" rows="2" class="w-full px-3 py-2 bg-cyber-900 border border-slate-700 rounded-xl text-sm text-white focus:border-cyan-500"></textarea>
         </div>
 
         <div class="flex justify-end gap-2 pt-2.5 border-t border-slate-700">
@@ -316,25 +317,20 @@
 
       <div class="flex items-center justify-between mb-3 text-xs">
         <span class="text-slate-400 text-[11px] sm:text-xs">Tài khoản ở đây có thể khôi phục lại bất kỳ lúc nào.</span>
-        <button id="emptyTrashBtn" onclick="emptyTrashConfirm()" class="text-rose-400 hover:text-rose-300 font-semibold shrink-0 ml-2 hidden">
-          Dọn sạch
-        </button>
+        <button id="emptyTrashBtn" onclick="emptyTrashConfirm()" class="text-rose-400 hover:text-rose-300 font-semibold shrink-0 ml-2 hidden">Dọn sạch</button>
       </div>
-
       <div id="trashList" class="overflow-y-auto space-y-2 flex-1 pr-0.5"></div>
-
       <div id="emptyTrashNotice" class="hidden text-center py-10">
         <i data-lucide="check-circle" class="w-10 h-10 mx-auto text-slate-600 mb-2"></i>
         <p class="text-xs sm:text-sm text-slate-400">Thùng rác đang trống.</p>
       </div>
-
       <div class="flex justify-end pt-3 border-t border-slate-700 mt-3">
         <button type="button" onclick="closeTrashModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs sm:text-sm font-medium">Đóng</button>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 bg-cyber-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none shadow-2xl">
+  <div id="toast" class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-[200] bg-cyber-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none shadow-2xl">
     <span id="toastMsg">Thành công</span>
   </div>
 
@@ -358,111 +354,75 @@
     let masterKey = null;
     let accounts = [];
     let platformIcons = {};
+    let bankPinCode = null; // Mã PIN để vào thẻ Ngân Hàng
+    let isBankUnlocked = false; // Trạng thái đã mở khóa két ngân hàng chưa
+    
     let isRegisterMode = false;
     let currentCategoryFilter = 'ALL';
 
     function getPlatformSharedIcon(gameName) {
       if (!gameName) return '';
-      const key = gameName.trim().toLowerCase();
-      return platformIcons[key] || '';
+      return platformIcons[gameName.trim().toLowerCase()] || '';
     }
 
     function getPlatformIcon(item) {
       const sharedImg = getPlatformSharedIcon(item.game);
       if (sharedImg) {
-        return `<img src="${sharedImg}" alt="${escapeHtml(item.game)}" class="w-8 h-8 rounded-xl object-cover border border-slate-700 shrink-0" onerror="this.style.display='none'">`;
+        return `<img src="${sharedImg}" class="w-8 h-8 rounded-xl object-cover border border-slate-700 shrink-0" onerror="this.style.display='none'">`;
       }
 
       const n = (item.game || '').toLowerCase().trim();
+      
+      // Mạng Xã Hội / Web
+      if (n.includes('facebook') || n === 'fb') return `<div class="w-8 h-8 rounded-xl bg-[#1877F2]/20 border border-[#1877F2]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>`;
+      if (n.includes('google') || n.includes('gmail')) return `<div class="w-8 h-8 rounded-xl bg-[#EA4335]/20 border border-[#EA4335]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#EA4335]" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg></div>`;
+      if (n.includes('tiktok')) return `<div class="w-8 h-8 rounded-xl bg-[#EE1D52]/20 border border-[#EE1D52]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#EE1D52]" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-1.01-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></div>`;
+      if (n.includes('telegram') || n === 'tele') return `<div class="w-8 h-8 rounded-xl bg-[#229ED9]/20 border border-[#229ED9]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#229ED9]" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.562 8.161c-.18.716-.962 4.084-1.362 5.75-.17.708-.431.945-.683.968-.55.05-1.005-.364-1.538-.713-.833-.546-1.304-.886-2.113-1.42-.934-.616-.328-.955.204-1.507.139-.144 2.55-2.336 2.597-2.535.006-.025.011-.118-.045-.168-.056-.05-.138-.033-.198-.02-.085.019-1.439.914-4.062 2.686-.384.263-.733.393-1.045.386-.344-.008-1.006-.195-1.498-.355-.604-.196-1.084-.3-1.042-.633.022-.174.266-.352.732-.535 2.868-1.249 4.782-2.073 5.74-2.472 2.73-.137 3.298 1.096 3.298 1.096z"/></svg></div>`;
+      
+      // Game
+      if (n.includes('steam')) return `<div class="w-8 h-8 rounded-xl bg-slate-700/50 border border-cyan-400/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-cyan-400" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.008l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.029 4.524 4.524s-2.03 4.524-4.524 4.524h-.105l-4.076 2.811c0 .052.005.105.005.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.155-3.331-2.677L.277 15.08C1.72 20.312 6.46 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12z"/></svg></div>`;
+      if (n.includes('riot') || n.includes('valorant') || n.includes('lol')) return `<div class="w-8 h-8 rounded-xl bg-[#D13639]/20 border border-[#D13639]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#D13639]" viewBox="0 0 24 24"><path d="M13.414 1.707l-9.043 4.22 3.037 11.836 3.04-.647-.947-3.69 1.838-.392.83 3.235 2.072-.442-.832-3.236 1.839-.391.83 3.235 2.072-.442-.832-3.235 1.84-.392.83 3.235 3.003-.64L19.467 4.19zm-3.064 18.06l-3.315.706.745 2.905 3.314-.707zm5.955-1.267l-3.313.706.744 2.905 3.314-.706z"/></svg></div>`;
 
-      if (n.includes('facebook') || n === 'fb') {
-        return `<div class="w-8 h-8 rounded-xl bg-[#1877F2]/20 border border-[#1877F2]/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-        </div>`;
-      }
-      if (n.includes('google') || n.includes('gmail')) {
-        return `<div class="w-8 h-8 rounded-xl bg-[#EA4335]/20 border border-[#EA4335]/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-[#EA4335]" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
-        </div>`;
-      }
-      if (n.includes('tiktok')) {
-        return `<div class="w-8 h-8 rounded-xl bg-[#EE1D52]/20 border border-[#EE1D52]/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-[#EE1D52]" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-1.01-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
-        </div>`;
-      }
-      if (n.includes('discord')) {
-        return `<div class="w-8 h-8 rounded-xl bg-[#5865F2]/20 border border-[#5865F2]/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-[#5865F2]" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-        </div>`;
-      }
-      if (n.includes('telegram') || n === 'tele') {
-        return `<div class="w-8 h-8 rounded-xl bg-[#229ED9]/20 border border-[#229ED9]/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-[#229ED9]" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.562 8.161c-.18.716-.962 4.084-1.362 5.75-.17.708-.431.945-.683.968-.55.05-1.005-.364-1.538-.713-.833-.546-1.304-.886-2.113-1.42-.934-.616-.328-.955.204-1.507.139-.144 2.55-2.336 2.597-2.535.006-.025.011-.118-.045-.168-.056-.05-.138-.033-.198-.02-.085.019-1.439.914-4.062 2.686-.384.263-.733.393-1.045.386-.344-.008-1.006-.195-1.498-.355-.604-.196-1.084-.3-1.042-.633.022-.174.266-.352.732-.535 2.868-1.249 4.782-2.073 5.74-2.472 2.73-.137 3.298 1.096 3.298 1.096z"/></svg>
-        </div>`;
-      }
-      if (n.includes('steam')) {
-        return `<div class="w-8 h-8 rounded-xl bg-slate-700/50 border border-cyan-400/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-cyan-400" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.008l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.029 4.524 4.524s-2.03 4.524-4.524 4.524h-.105l-4.076 2.811c0 .052.005.105.005.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.155-3.331-2.677L.277 15.08C1.72 20.312 6.46 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12z"/></svg>
-        </div>`;
-      }
-      if (n.includes('riot') || n.includes('valorant') || n.includes('league') || n.includes('lol') || n.includes('liên minh')) {
-        return `<div class="w-8 h-8 rounded-xl bg-[#D13639]/20 border border-[#D13639]/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-[#D13639]" viewBox="0 0 24 24"><path d="M13.414 1.707l-9.043 4.22 3.037 11.836 3.04-.647-.947-3.69 1.838-.392.83 3.235 2.072-.442-.832-3.236 1.839-.391.83 3.235 2.072-.442-.832-3.235 1.84-.392.83 3.235 3.003-.64L19.467 4.19zm-3.064 18.06l-3.315.706.745 2.905 3.314-.707zm5.955-1.267l-3.313.706.744 2.905 3.314-.707z"/></svg>
-        </div>`;
-      }
-      if (n.includes('youtube') || n.includes('yt')) {
-        return `<div class="w-8 h-8 rounded-xl bg-[#FF0000]/20 border border-[#FF0000]/40 flex items-center justify-center shrink-0">
-          <svg class="w-4 h-4 fill-[#FF0000]" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-        </div>`;
-      }
+      // Ngân hàng / Ví
+      if (n.includes('momo')) return `<div class="w-8 h-8 rounded-xl bg-[#A50064]/20 border border-[#A50064]/40 flex items-center justify-center shrink-0 text-[10px] font-bold text-[#A50064]">MM</div>`;
+      if (n.includes('vietcombank') || n === 'vcb') return `<div class="w-8 h-8 rounded-xl bg-[#71C25A]/20 border border-[#71C25A]/40 flex items-center justify-center shrink-0 text-[10px] font-bold text-[#71C25A]">VCB</div>`;
+      if (n.includes('techcombank') || n === 'tcb') return `<div class="w-8 h-8 rounded-xl bg-[#EA1C24]/20 border border-[#EA1C24]/40 flex items-center justify-center shrink-0 text-[10px] font-bold text-[#EA1C24]">TCB</div>`;
+      if (n.includes('mb') || n.includes('mbbank')) return `<div class="w-8 h-8 rounded-xl bg-[#1431DF]/20 border border-[#1431DF]/40 flex items-center justify-center shrink-0 text-[10px] font-bold text-[#4B68FF]">MB</div>`;
+      if (n.includes('binance')) return `<div class="w-8 h-8 rounded-xl bg-[#FCD535]/20 border border-[#FCD535]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#FCD535]" viewBox="0 0 24 24"><path d="M12.01 4.908L8.12 8.795H4.225l7.785-7.785 7.77 7.785h-3.895L12.01 4.908zM15.9 8.795l3.895 3.895-3.895 3.895h3.895l3.895-3.895-3.895-3.895H15.9zm-7.78 0H4.225L.33 12.69l3.895 3.895h3.895L4.225 12.69 8.12 8.795zm3.89 3.895l-3.895 3.895h7.79l-3.895-3.895zm0 2.308l2.022-2.022L12.01 10.954l-2.022 2.022 2.022 2.022zm0 4.197l-3.895-3.895H4.225l7.785 7.785 7.77-7.785h-3.895l-3.895 3.895z"/></svg></div>`;
+      if (n.includes('paypal')) return `<div class="w-8 h-8 rounded-xl bg-[#00457C]/20 border border-[#00457C]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#0079C1]" viewBox="0 0 24 24"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/></svg></div>`;
 
-      const firstLetter = (item.game || 'G').trim().charAt(0).toUpperCase();
-      const isSoc = item.category === 'SOCIAL';
-      const bgGrad = isSoc ? 'from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/40' : 'from-cyan-500/20 to-purple-500/20 text-cyan-400 border-cyan-500/40';
+      // Fallback
+      const firstLetter = (item.game || 'V').trim().charAt(0).toUpperCase();
+      let bgGrad = 'from-cyan-500/20 to-purple-500/20 text-cyan-400 border-cyan-500/40';
+      if (item.category === 'SOCIAL') bgGrad = 'from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/40';
+      if (item.category === 'BANK') bgGrad = 'from-rose-500/20 to-orange-500/20 text-rose-400 border-rose-500/40';
 
-      return `<div class="w-8 h-8 rounded-xl bg-gradient-to-tr ${bgGrad} border flex items-center justify-center font-bold font-gaming text-sm shrink-0">
-        ${firstLetter}
-      </div>`;
+      return `<div class="w-8 h-8 rounded-xl bg-gradient-to-tr ${bgGrad} border flex items-center justify-center font-bold font-gaming text-sm shrink-0">${firstLetter}</div>`;
     }
 
     function handleGameNameInput(val) {
       const existing = getPlatformSharedIcon(val);
       if (existing) {
-        if (existing.startsWith('data:image')) {
-          document.getElementById('accCustomIconBase64').value = existing;
-          document.getElementById('accIconUrl').value = '';
-        } else {
-          document.getElementById('accCustomIconBase64').value = '';
-          document.getElementById('accIconUrl').value = existing;
-        }
+        if (existing.startsWith('data:image')) document.getElementById('accCustomIconBase64').value = existing;
+        else document.getElementById('accIconUrl').value = existing;
         updateIconPreview(existing);
       }
     }
 
     function handleIconFileSelect(event) {
       const file = event.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        showToast('Vui lòng chỉ chọn file hình ảnh!');
-        return;
-      }
-
+      if (!file || !file.type.startsWith('image/')) return;
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
           const canvas = document.createElement('canvas');
-          const size = 80;
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, size, size);
-          const compressedBase64 = canvas.toDataURL('image/webp', 0.85);
-
-          document.getElementById('accCustomIconBase64').value = compressedBase64;
+          canvas.width = 80; canvas.height = 80;
+          canvas.getContext('2d').drawImage(img, 0, 0, 80, 80);
+          const compressed = canvas.toDataURL('image/webp', 0.85);
+          document.getElementById('accCustomIconBase64').value = compressed;
           document.getElementById('accIconUrl').value = '';
-          updateIconPreview(compressedBase64);
+          updateIconPreview(compressed);
         };
         img.src = e.target.result;
       };
@@ -496,40 +456,99 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-
       auth.onAuthStateChanged(async (user) => {
         if (user) {
           currentUser = user;
-          const cachedPass = localStorage.getItem(MASTER_KEY_STORAGE);
-          if (cachedPass) {
-            masterKey = cachedPass;
+          if (localStorage.getItem(MASTER_KEY_STORAGE)) {
+            masterKey = localStorage.getItem(MASTER_KEY_STORAGE);
             await syncFromCloud();
             document.getElementById('lockScreen').classList.add('hidden');
           } else {
             document.getElementById('lockScreen').classList.remove('hidden');
-            document.getElementById('lockScreenSubtext').innerText = 'Nhập Master Password để mở khóa kho dữ liệu';
             document.getElementById('cloudEmail').value = user.email || '';
             document.getElementById('cloudEmail').readOnly = true;
           }
         } else {
           document.getElementById('lockScreen').classList.remove('hidden');
-          document.getElementById('lockScreenSubtext').innerText = 'Đăng nhập để đồng bộ kho dữ liệu';
         }
       });
     });
 
+    // ================= XỬ LÝ MÃ PIN NGÂN HÀNG =================
+    function openBankTab() {
+      if (isBankUnlocked) {
+        applyCategoryTab('BANK');
+        return;
+      }
+      document.getElementById('pinInput').value = '';
+      if (!bankPinCode) {
+        document.getElementById('pinModalTitle').innerText = 'Tạo Mã PIN Cấp 2';
+        document.getElementById('pinModalSub').innerText = 'Tạo mã PIN 4 số để bảo vệ Két Ngân Hàng. Hãy nhớ kỹ mã này!';
+      } else {
+        document.getElementById('pinModalTitle').innerText = 'Mở Khóa Ngân Hàng';
+        document.getElementById('pinModalSub').innerText = 'Nhập mã PIN 4 số của bạn để xem tài khoản.';
+      }
+      document.getElementById('pinModal').classList.remove('hidden');
+      document.getElementById('pinModal').classList.add('flex');
+      setTimeout(() => document.getElementById('pinInput').focus(), 100);
+    }
+
+    function closePinModal() {
+      document.getElementById('pinModal').classList.add('hidden');
+      document.getElementById('pinModal').classList.remove('flex');
+    }
+
+    function submitPin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('pinInput').value.trim();
+      if (pin.length < 4) {
+        showToast('Mã PIN phải đủ 4 số!');
+        return;
+      }
+      
+      if (!bankPinCode) {
+        bankPinCode = pin;
+        pushToCloud();
+        isBankUnlocked = true;
+        closePinModal();
+        applyCategoryTab('BANK');
+        showToast('Đã tạo mã PIN & Mở khóa Két Ngân Hàng!');
+      } else {
+        if (pin === bankPinCode) {
+          isBankUnlocked = true;
+          closePinModal();
+          applyCategoryTab('BANK');
+          showToast('Đã mở khóa Két Ngân Hàng!');
+        } else {
+          showToast('Mã PIN không chính xác!');
+          document.getElementById('pinInput').value = '';
+        }
+      }
+    }
+
     function setCategoryTab(category) {
+      if (category === 'BANK') {
+        openBankTab();
+      } else {
+        // Tự động khóa két ngân hàng nếu bấm sang tab khác
+        isBankUnlocked = false; 
+        applyCategoryTab(category);
+      }
+    }
+
+    function applyCategoryTab(category) {
       currentCategoryFilter = category;
       const tabs = [
-        { id: 'tabCatAll', cat: 'ALL' },
-        { id: 'tabCatGame', cat: 'GAME' },
-        { id: 'tabCatSocial', cat: 'SOCIAL' }
+        { id: 'tabCatAll', cat: 'ALL', baseCls: 'text-cyan-300 border-cyan-500/50 bg-cyan-500/20' },
+        { id: 'tabCatGame', cat: 'GAME', baseCls: 'text-purple-300 border-purple-500/50 bg-purple-500/20' },
+        { id: 'tabCatSocial', cat: 'SOCIAL', baseCls: 'text-pink-300 border-pink-500/50 bg-pink-500/20' },
+        { id: 'tabCatBank', cat: 'BANK', baseCls: 'text-rose-300 border-rose-500/50 bg-rose-500/20' }
       ];
 
       tabs.forEach(t => {
         const btn = document.getElementById(t.id);
         if (t.cat === category) {
-          btn.className = "shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition";
+          btn.className = `shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border flex items-center gap-1.5 transition ${t.baseCls}`;
         } else {
           btn.className = "shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition";
         }
@@ -566,10 +585,9 @@
 
         masterKey = masterPass;
         localStorage.setItem(MASTER_KEY_STORAGE, masterKey);
-
         await syncFromCloud();
         document.getElementById('lockScreen').classList.add('hidden');
-        showToast('Đã kết nối và đồng bộ đám mây!');
+        showToast('Đã kết nối đám mây!');
       } catch (err) {
         errorEl.innerText = err.message;
         errorEl.classList.remove('hidden');
@@ -582,20 +600,24 @@
       const docSnap = await docRef.get();
 
       if (docSnap.exists) {
-        const encrypted = docSnap.data().payload;
         try {
-          const bytes = CryptoJS.AES.decrypt(encrypted, masterKey);
+          const bytes = CryptoJS.AES.decrypt(docSnap.data().payload, masterKey);
           const decrypted = bytes.toString(CryptoJS.enc.Utf8);
           if (!decrypted) throw new Error();
           
           const parsed = JSON.parse(decrypted);
+          let settingsObj = {};
+
           if (Array.isArray(parsed)) {
             accounts = parsed;
             platformIcons = {};
           } else {
             accounts = parsed.accounts || [];
             platformIcons = parsed.platformIcons || {};
+            settingsObj = parsed.settings || {};
           }
+
+          bankPinCode = settingsObj.bankPinCode || null;
 
           accounts.forEach(a => {
             if (!a.category) a.category = 'GAME';
@@ -605,7 +627,7 @@
             }
           });
         } catch (e) {
-          alert('Sai Master Password! Vui lòng nhập lại đúng khóa bảo vệ.');
+          alert('Sai Master Password! Vui lòng tải lại trang và nhập đúng khóa bảo vệ.');
           localStorage.removeItem(MASTER_KEY_STORAGE);
           document.getElementById('lockScreen').classList.remove('hidden');
           accounts = [];
@@ -613,20 +635,21 @@
       } else {
         accounts = [];
         platformIcons = {};
+        bankPinCode = null;
       }
+      isBankUnlocked = false; // Luôn khóa ngân hàng khi mới F5
       updateTrashCount();
-      updatePlatformFilter();
-      renderAccounts();
+      applyCategoryTab('ALL');
     }
 
     async function pushToCloud() {
       if (!currentUser || !masterKey) return;
       const packageData = {
         accounts: accounts,
-        platformIcons: platformIcons
+        platformIcons: platformIcons,
+        settings: { bankPinCode: bankPinCode }
       };
-      const jsonStr = JSON.stringify(packageData);
-      const encrypted = CryptoJS.AES.encrypt(jsonStr, masterKey).toString();
+      const encrypted = CryptoJS.AES.encrypt(JSON.stringify(packageData), masterKey).toString();
 
       await db.collection('vaults').doc(currentUser.uid).set({
         payload: encrypted,
@@ -642,15 +665,21 @@
       masterKey = null;
       accounts = [];
       platformIcons = {};
+      bankPinCode = null;
+      isBankUnlocked = false;
       document.getElementById('cloudEmail').readOnly = false;
       document.getElementById('accountsGrid').innerHTML = '';
       document.getElementById('lockScreen').classList.remove('hidden');
-      document.getElementById('lockScreenSubtext').innerText = 'Đã đăng xuất tài khoản';
       showToast('Đã đăng xuất.');
     }
 
     function exportToExcel() {
-      const activeList = accounts.filter(a => !a.deleted);
+      // Ẩn tài khoản ngân hàng nếu chưa mở khóa két
+      const activeList = accounts.filter(a => {
+        if (a.deleted) return false;
+        if (a.category === 'BANK' && !isBankUnlocked) return false;
+        return true;
+      });
 
       if (activeList.length === 0) {
         showToast('Kho dữ liệu đang trống!');
@@ -658,7 +687,7 @@
       }
 
       const excelData = activeList.map(item => ({
-        "Category": item.category === 'SOCIAL' ? 'Social Media' : 'Game',
+        "Category": item.category === 'BANK' ? 'Banking' : (item.category === 'SOCIAL' ? 'Social Media' : 'Game'),
         "Platform / Game": item.game || "",
         "User": item.user || "",
         "Password": item.password || "",
@@ -668,23 +697,10 @@
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
-      worksheet['!cols'] = [
-        { wch: 15 },
-        { wch: 22 },
-        { wch: 25 },
-        { wch: 25 },
-        { wch: 30 },
-        { wch: 18 },
-        { wch: 35 }
-      ];
-
+      worksheet['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 25 }, { wch: 25 }, { wch: 30 }, { wch: 18 }, { wch: 35 }];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Accounts");
-
-      const today = new Date().toISOString().slice(0, 10);
-      const fileName = `Danh_sach_tai_khoan_${today}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
-
+      XLSX.writeFile(workbook, `Danh_sach_tai_khoan_${new Date().toISOString().slice(0, 10)}.xlsx`);
       showToast(`Đã xuất ${activeList.length} tài khoản!`);
     }
 
@@ -695,19 +711,18 @@
       const reader = new FileReader();
       reader.onload = async function(e) {
         try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
+          const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
           const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
 
-          let headerIdx = -1, col = { g: -1, u: -1, p: -1, e: -1, ph: -1, n: -1, cat: -1 };
+          let col = { g: -1, u: -1, p: -1, e: -1, ph: -1, n: -1, cat: -1 };
+          let headerIdx = -1;
           for (let r = 0; r < rows.length; r++) {
             const row = rows[r].map(c => String(c).trim().toLowerCase());
-            const g = row.findIndex(c => c.includes('game') || c.includes('platform') || c.includes('nền tảng') || c.includes('tên'));
-            const u = row.findIndex(c => c.includes('user') || c.includes('tài khoản'));
-            const p = row.findIndex(c => c.includes('pass') || c.includes('mật khẩu'));
-            if (g !== -1 && (u !== -1 || p !== -1)) {
+            col.g = row.findIndex(c => c.includes('game') || c.includes('platform') || c.includes('nền tảng') || c.includes('tên'));
+            col.u = row.findIndex(c => c.includes('user') || c.includes('tài khoản'));
+            col.p = row.findIndex(c => c.includes('pass') || c.includes('mật khẩu'));
+            if (col.g !== -1 && (col.u !== -1 || col.p !== -1)) {
               headerIdx = r;
-              col.g = g; col.u = u; col.p = p;
               col.cat = row.findIndex(c => c.includes('category') || c.includes('loại') || c.includes('danh mục'));
               col.e = row.findIndex(c => c.includes('email') || c.includes('mail'));
               col.ph = row.findIndex(c => c.includes('phone') || c.includes('sđt'));
@@ -717,11 +732,11 @@
           }
 
           if (headerIdx === -1) {
-            showToast('Không tìm thấy cột Tên nền tảng/Game / User / Password!');
-            return;
+            showToast('Không tìm thấy cột Tên nền tảng/Game / User / Password!'); return;
           }
 
-          const socialKeywords = ['facebook', 'fb', 'google', 'gmail', 'tiktok', 'discord', 'telegram', 'twitter', 'x', 'instagram', 'insta', 'zalo', 'threads', 'reddit', 'youtube'];
+          const socialK = ['facebook', 'fb', 'google', 'gmail', 'tiktok', 'discord', 'telegram', 'twitter', 'x', 'instagram', 'insta', 'zalo', 'youtube'];
+          const bankK = ['bank', 'vcb', 'mbbank', 'momo', 'zalopay', 'paypal', 'binance', 'ngân hàng', 'ví', 'tcb', 'techcombank', 'vietin', 'bidv', 'agribank'];
 
           let added = 0;
           for (let r = headerIdx + 1; r < rows.length; r++) {
@@ -730,11 +745,11 @@
             const user = col.u !== -1 ? String(row[col.u] || '').trim() : '';
             
             let cat = 'GAME';
-            if (col.cat !== -1 && String(row[col.cat] || '').toLowerCase().includes('social')) {
-              cat = 'SOCIAL';
-            } else if (socialKeywords.some(k => game.toLowerCase().includes(k))) {
-              cat = 'SOCIAL';
-            }
+            const catCell = col.cat !== -1 ? String(row[col.cat] || '').toLowerCase() : '';
+            if (catCell.includes('bank') || catCell.includes('ngân hàng')) cat = 'BANK';
+            else if (catCell.includes('social')) cat = 'SOCIAL';
+            else if (bankK.some(k => game.toLowerCase().includes(k))) cat = 'BANK';
+            else if (socialK.some(k => game.toLowerCase().includes(k))) cat = 'SOCIAL';
 
             if (game || user) {
               accounts.push({
@@ -751,7 +766,6 @@
               added++;
             }
           }
-
           if (added > 0) {
             await pushToCloud();
             updatePlatformFilter();
@@ -760,9 +774,7 @@
           }
         } catch (err) {
           showToast('Lỗi đọc Excel: ' + err.message);
-        } finally {
-          event.target.value = '';
-        }
+        } finally { event.target.value = ''; }
       };
       reader.readAsArrayBuffer(file);
     }
@@ -772,7 +784,8 @@
       const val = select.value;
       const activeList = accounts.filter(a => {
         if (a.deleted) return false;
-        if (currentCategoryFilter !== 'ALL' && (a.category || 'GAME') !== currentCategoryFilter) return false;
+        if (currentCategoryFilter === 'ALL' && a.category === 'BANK') return false;
+        if (currentCategoryFilter !== 'ALL' && a.category !== currentCategoryFilter) return false;
         return true;
       });
 
@@ -787,8 +800,7 @@
     }
 
     function updateTrashCount() {
-      const trashCount = accounts.filter(a => a.deleted).length;
-      document.getElementById('trashCountBadge').innerText = trashCount;
+      document.getElementById('trashCountBadge').innerText = accounts.filter(a => a.deleted).length;
     }
 
     function renderAccounts() {
@@ -799,7 +811,11 @@
 
       const filtered = accounts.filter(a => {
         if (a.deleted) return false;
-        if (currentCategoryFilter !== 'ALL' && (a.category || 'GAME') !== currentCategoryFilter) return false;
+        // BẢO MẬT: Ẩn tài khoản Bank nếu đang ở Tab Tất Cả, HOẶC nếu két chưa mở
+        if (currentCategoryFilter === 'ALL' && a.category === 'BANK') return false;
+        if (a.category === 'BANK' && !isBankUnlocked) return false;
+        if (currentCategoryFilter !== 'ALL' && a.category !== currentCategoryFilter) return false;
+        
         const mg = (fg === 'ALL') || (a.game === fg);
         const mq = !q || a.game.toLowerCase().includes(q) || a.user.toLowerCase().includes(q) || (a.email && a.email.toLowerCase().includes(q));
         return mg && mq;
@@ -813,37 +829,28 @@
 
       empty.classList.add('hidden');
       grid.innerHTML = filtered.map(a => {
-        const safeGame = escapeHtml(a.game);
-        const safeUser = escapeHtml(a.user);
-        const safePass = escapeHtml(a.password);
-        const safeEmail = escapeHtml(a.email || '');
-        const safePhone = escapeHtml(a.phone || '');
-        const safeNotes = escapeHtml(a.notes || '');
+        const isBank = a.category === 'BANK';
         const isSocial = a.category === 'SOCIAL';
-        const iconHtml = getPlatformIcon(a);
+        const borderGlow = isBank ? 'border-rose-500/40 hover:shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'border-slate-700/80 neon-glow';
+        const tagCls = isBank ? 'text-rose-400 border-rose-500/30' : (isSocial ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30');
+        const tagTxt = isBank ? 'BANK' : (isSocial ? 'MXH' : 'GAME');
 
         return `
-          <div class="bg-cyber-800 border border-slate-700/80 rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between neon-glow transition">
+          <div class="bg-cyber-800 border ${borderGlow} rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between transition">
             <div>
               <div class="flex items-center justify-between mb-2.5 sm:mb-3">
                 <div class="flex items-center gap-2.5 min-w-0">
-                  ${iconHtml}
+                  ${getPlatformIcon(a)}
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5">
-                      <span class="font-bold text-sm sm:text-base text-cyan-400 font-gaming truncate">${safeGame}</span>
-                      <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border shrink-0 ${isSocial ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30'}">
-                        ${isSocial ? 'MXH' : 'GAME'}
-                      </span>
+                      <span class="font-bold text-sm sm:text-base ${isBank ? 'text-rose-300' : 'text-cyan-400'} font-gaming truncate">${escapeHtml(a.game)}</span>
+                      <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border shrink-0 ${tagCls}">${tagTxt}</span>
                     </div>
                   </div>
                 </div>
                 <div class="flex gap-1 shrink-0">
-                  <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 rounded-lg transition active:scale-90">
-                    <i data-lucide="edit" class="w-4 h-4"></i>
-                  </button>
-                  <button onclick="moveToTrash('${a.id}')" title="Bỏ vào thùng rác" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-700/60 rounded-lg transition active:scale-90">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
+                  <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 rounded-lg transition active:scale-90"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                  <button onclick="moveToTrash('${a.id}')" title="Xóa" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-700/60 rounded-lg transition active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                 </div>
               </div>
 
@@ -851,51 +858,24 @@
                 <div class="flex justify-between items-center">
                   <span class="text-slate-400 text-[11px] sm:text-xs">User:</span>
                   <div class="flex items-center gap-1.5 min-w-0">
-                    <span class="font-mono text-slate-200 select-all truncate max-w-[140px] sm:max-w-[180px]">${safeUser}</span>
-                    <button onclick="copyToClipboard('${safeUser}', 'Tài khoản')" title="Sao chép User" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
-                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                    </button>
+                    <span class="font-mono text-slate-200 select-all truncate max-w-[140px] sm:max-w-[180px]">${escapeHtml(a.user)}</span>
+                    <button onclick="copyToClipboard('${escapeHtml(a.user)}', 'Tài khoản')" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                   </div>
                 </div>
 
                 <div class="flex justify-between items-center">
                   <span class="text-slate-400 text-[11px] sm:text-xs">Pass:</span>
                   <div class="flex items-center gap-1">
-                    <input type="password" id="pass_field_${a.id}" value="${safePass}" readonly
-                      class="bg-transparent text-right font-mono text-cyan-300 focus:outline-none w-24 sm:w-28 text-xs select-all">
-                    <button onclick="toggleCardPass('${a.id}')" title="Ẩn/Hiện Mật khẩu" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
-                      <i data-lucide="eye" id="card_eye_${a.id}" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button onclick="copyToClipboard('${safePass}', 'Mật khẩu')" title="Sao chép Pass" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
-                      <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                    </button>
+                    <input type="password" id="pass_field_${a.id}" value="${escapeHtml(a.password)}" readonly class="bg-transparent text-right font-mono ${isBank ? 'text-rose-200' : 'text-cyan-300'} focus:outline-none w-24 sm:w-28 text-xs select-all">
+                    <button onclick="toggleCardPass('${a.id}')" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"><i data-lucide="eye" id="card_eye_${a.id}" class="w-3.5 h-3.5"></i></button>
+                    <button onclick="copyToClipboard('${escapeHtml(a.password)}', 'Mật khẩu')" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
                   </div>
                 </div>
 
-                ${safeEmail ? `
-                  <div class="flex justify-between items-center">
-                    <span class="text-slate-400 text-[11px] sm:text-xs">Mail:</span>
-                    <div class="flex items-center gap-1.5 min-w-0">
-                      <span class="text-slate-300 select-all truncate max-w-[140px] sm:max-w-[180px]">${safeEmail}</span>
-                      <button onclick="copyToClipboard('${safeEmail}', 'Email')" title="Sao chép Email" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                      </button>
-                    </div>
-                  </div>` : ''}
-
-                ${safePhone ? `
-                  <div class="flex justify-between items-center">
-                    <span class="text-slate-400 text-[11px] sm:text-xs">SĐT:</span>
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-slate-300 select-all">${safePhone}</span>
-                      <button onclick="copyToClipboard('${safePhone}', 'Số điện thoại')" title="Sao chép SĐT" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                      </button>
-                    </div>
-                  </div>` : ''}
+                ${a.email ? `<div class="flex justify-between items-center"><span class="text-slate-400 text-[11px] sm:text-xs">Mail:</span><div class="flex items-center gap-1.5 min-w-0"><span class="text-slate-300 select-all truncate max-w-[140px] sm:max-w-[180px]">${escapeHtml(a.email)}</span><button onclick="copyToClipboard('${escapeHtml(a.email)}', 'Email')" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button></div></div>` : ''}
+                ${a.phone ? `<div class="flex justify-between items-center"><span class="text-slate-400 text-[11px] sm:text-xs">SĐT/Thẻ:</span><div class="flex items-center gap-1.5"><span class="text-slate-300 select-all">${escapeHtml(a.phone)}</span><button onclick="copyToClipboard('${escapeHtml(a.phone)}', 'Số điện thoại')" class="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button></div></div>` : ''}
               </div>
-
-              ${safeNotes ? `<p class="text-[11px] text-slate-400 mt-2 bg-slate-900/40 p-1.5 rounded border border-slate-800 break-words">${safeNotes}</p>` : ''}
+              ${a.notes ? `<p class="text-[11px] ${isBank ? 'text-rose-300/80' : 'text-slate-400'} mt-2 bg-slate-900/40 p-1.5 rounded border border-slate-800 break-words">${escapeHtml(a.notes)}</p>` : ''}
             </div>
           </div>
         `;
@@ -906,55 +886,35 @@
     function toggleCardPass(id) {
       const input = document.getElementById(`pass_field_${id}`);
       const icon = document.getElementById(`card_eye_${id}`);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.setAttribute('data-lucide', 'eye-off');
-      } else {
-        input.type = 'password';
-        icon.setAttribute('data-lucide', 'eye');
-      }
+      if (input.type === 'password') { input.type = 'text'; icon.setAttribute('data-lucide', 'eye-off'); } 
+      else { input.type = 'password'; icon.setAttribute('data-lucide', 'eye'); }
       lucide.createIcons();
     }
 
     function toggleModalPassVisibility() {
       const input = document.getElementById('accPass');
       const icon = document.getElementById('modalPassEyeIcon');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.setAttribute('data-lucide', 'eye-off');
-      } else {
-        input.type = 'password';
-        icon.setAttribute('data-lucide', 'eye');
-      }
+      if (input.type === 'password') { input.type = 'text'; icon.setAttribute('data-lucide', 'eye-off'); } 
+      else { input.type = 'password'; icon.setAttribute('data-lucide', 'eye'); }
       lucide.createIcons();
     }
 
     function copyToClipboard(text, label) {
-      navigator.clipboard.writeText(text).then(() => {
-        showToast(`Đã sao chép ${label}!`);
-      }).catch(() => {
-        showToast('Lỗi khi sao chép!');
-      });
+      navigator.clipboard.writeText(text).then(() => showToast(`Đã sao chép ${label}!`)).catch(() => showToast('Lỗi sao chép!'));
     }
 
     function openModal(editId = null) {
       const modal = document.getElementById('accountModal');
-      const title = document.getElementById('modalTitle');
-      const form = document.getElementById('accountModalForm');
-      form.reset();
+      document.getElementById('accountModalForm').reset();
       clearCustomIcon();
 
       if (editId) {
         const item = accounts.find(a => a.id === editId);
         if (item) {
-          title.innerText = 'Cập Nhật Tài Khoản';
+          document.getElementById('modalTitle').innerText = 'Cập Nhật Tài Khoản';
           document.getElementById('editAccountId').value = item.id;
+          document.getElementsByName('accCategory').forEach(r => r.checked = (r.value === (item.category || 'GAME')));
           
-          const catRadios = document.getElementsByName('accCategory');
-          for (let r of catRadios) {
-            r.checked = (r.value === (item.category || 'GAME'));
-          }
-
           document.getElementById('accGame').value = item.game || '';
           document.getElementById('accUser').value = item.user || '';
           document.getElementById('accPass').value = item.password || '';
@@ -964,108 +924,75 @@
 
           const existingImg = getPlatformSharedIcon(item.game);
           if (existingImg) {
-            if (existingImg.startsWith('data:image')) {
-              document.getElementById('accCustomIconBase64').value = existingImg;
-            } else {
-              document.getElementById('accIconUrl').value = existingImg;
-            }
+            if (existingImg.startsWith('data:image')) document.getElementById('accCustomIconBase64').value = existingImg;
+            else document.getElementById('accIconUrl').value = existingImg;
             updateIconPreview(existingImg);
           }
         }
       } else {
-        title.innerText = 'Thêm Tài Khoản Mới';
+        document.getElementById('modalTitle').innerText = 'Thêm Tài Khoản Mới';
         document.getElementById('editAccountId').value = '';
-        
-        const catRadios = document.getElementsByName('accCategory');
-        for (let r of catRadios) {
-          r.checked = (currentCategoryFilter === 'SOCIAL' ? r.value === 'SOCIAL' : r.value === 'GAME');
-        }
+        document.getElementsByName('accCategory').forEach(r => r.checked = (currentCategoryFilter !== 'ALL' ? r.value === currentCategoryFilter : r.value === 'GAME'));
       }
 
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      lucide.createIcons();
+      modal.classList.remove('hidden'); modal.classList.add('flex'); lucide.createIcons();
     }
 
-    function editAccount(id) {
-      openModal(id);
-    }
-
-    function closeModal() {
-      const modal = document.getElementById('accountModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
+    function editAccount(id) { openModal(id); }
+    function closeModal() { document.getElementById('accountModal').classList.add('hidden'); document.getElementById('accountModal').classList.remove('flex'); }
 
     async function saveAccount(e) {
       e.preventDefault();
       const id = document.getElementById('editAccountId').value;
-      const catRadios = document.getElementsByName('accCategory');
       let selectedCategory = 'GAME';
-      for (let r of catRadios) {
-        if (r.checked) selectedCategory = r.value;
-      }
+      document.getElementsByName('accCategory').forEach(r => { if (r.checked) selectedCategory = r.value; });
 
       const gameName = document.getElementById('accGame').value.trim();
       const iconBase64 = document.getElementById('accCustomIconBase64').value;
       const iconUrl = document.getElementById('accIconUrl').value.trim();
 
-      const platformKey = gameName.toLowerCase();
-      if (iconBase64 || iconUrl) {
-        platformIcons[platformKey] = iconBase64 || iconUrl;
-      }
+      if (iconBase64 || iconUrl) platformIcons[gameName.toLowerCase()] = iconBase64 || iconUrl;
 
       const data = {
-        category: selectedCategory,
-        game: gameName,
-        user: document.getElementById('accUser').value.trim(),
-        password: document.getElementById('accPass').value,
-        email: document.getElementById('accEmail').value.trim(),
-        phone: document.getElementById('accPhone').value.trim(),
-        notes: document.getElementById('accNotes').value.trim()
+        category: selectedCategory, game: gameName, user: document.getElementById('accUser').value.trim(),
+        password: document.getElementById('accPass').value, email: document.getElementById('accEmail').value.trim(),
+        phone: document.getElementById('accPhone').value.trim(), notes: document.getElementById('accNotes').value.trim()
       };
 
       if (id) {
         const idx = accounts.findIndex(a => a.id === id);
-        if (idx !== -1) {
-          accounts[idx] = { ...accounts[idx], ...data };
-        }
+        if (idx !== -1) accounts[idx] = { ...accounts[idx], ...data };
       } else {
         accounts.unshift({ id: 'acc_' + Date.now(), ...data, deleted: false });
       }
 
       await pushToCloud();
       closeModal();
-      updatePlatformFilter();
-      renderAccounts();
+      
+      // Nếu vừa lưu thẻ Ngân hàng, mở khóa luôn két để xem
+      if (selectedCategory === 'BANK') {
+        isBankUnlocked = true;
+        applyCategoryTab('BANK');
+      } else {
+        updatePlatformFilter(); renderAccounts();
+      }
       showToast('Đã lưu dữ liệu!');
     }
 
     async function moveToTrash(id) {
       const idx = accounts.findIndex(a => a.id === id);
       if (idx !== -1) {
-        accounts[idx].deleted = true;
-        accounts[idx].deletedAt = new Date().toISOString();
-        await pushToCloud();
-        updatePlatformFilter();
-        renderAccounts();
-        showToast('Đã chuyển vào Thùng Rác.');
+        accounts[idx].deleted = true; accounts[idx].deletedAt = new Date().toISOString();
+        await pushToCloud(); updatePlatformFilter(); renderAccounts(); showToast('Đã chuyển vào Thùng Rác.');
       }
     }
 
     function openTrashModal() {
       renderTrashList();
-      const modal = document.getElementById('trashModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      document.getElementById('trashModal').classList.remove('hidden'); document.getElementById('trashModal').classList.add('flex');
       lucide.createIcons();
     }
-
-    function closeTrashModal() {
-      const modal = document.getElementById('trashModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
+    function closeTrashModal() { document.getElementById('trashModal').classList.add('hidden'); document.getElementById('trashModal').classList.remove('flex'); }
 
     function renderTrashList() {
       const trashList = document.getElementById('trashList');
@@ -1074,37 +1001,24 @@
       const deletedAccounts = accounts.filter(a => a.deleted);
 
       if (deletedAccounts.length === 0) {
-        trashList.innerHTML = '';
-        emptyNotice.classList.remove('hidden');
-        emptyBtn.classList.add('hidden');
-        return;
+        trashList.innerHTML = ''; emptyNotice.classList.remove('hidden'); emptyBtn.classList.add('hidden'); return;
       }
-
-      emptyNotice.classList.add('hidden');
-      emptyBtn.classList.remove('hidden');
+      emptyNotice.classList.add('hidden'); emptyBtn.classList.remove('hidden');
 
       trashList.innerHTML = deletedAccounts.map(a => `
         <div class="bg-cyber-900 border border-slate-700/80 rounded-xl p-2.5 sm:p-3 flex items-center justify-between gap-2">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 truncate">
-              <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border shrink-0 ${a.category === 'SOCIAL' ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30'}">
-                ${a.category === 'SOCIAL' ? 'MXH' : 'GAME'}
+              <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border shrink-0 ${a.category === 'BANK' ? 'text-rose-400 border-rose-500/30' : (a.category === 'SOCIAL' ? 'text-pink-400 border-pink-500/30' : 'text-purple-400 border-purple-500/30')}">
+                ${a.category === 'BANK' ? 'BANK' : (a.category === 'SOCIAL' ? 'MXH' : 'GAME')}
               </span>
-              <span class="font-bold text-xs sm:text-sm text-cyan-400 font-gaming truncate">${escapeHtml(a.game)}</span>
-              <span class="text-[11px] text-slate-300 font-mono truncate">(${escapeHtml(a.user)})</span>
+              <span class="font-bold text-xs sm:text-sm ${a.category === 'BANK' ? 'text-rose-400' : 'text-cyan-400'} font-gaming truncate">${escapeHtml(a.game)}</span>
             </div>
-            <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">${a.email ? escapeHtml(a.email) : (a.notes ? escapeHtml(a.notes) : 'Không có ghi chú')}</p>
+            <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">${escapeHtml(a.user)}</p>
           </div>
           <div class="flex items-center gap-1 shrink-0">
-            <button onclick="restoreAccount('${a.id}')" title="Khôi phục"
-              class="px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-medium flex items-center gap-1 transition">
-              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-emerald-400"></i>
-              <span class="hidden sm:inline">Khôi phục</span>
-            </button>
-            <button onclick="permanentlyDeleteAccount('${a.id}')" title="Xóa vĩnh viễn"
-              class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition">
-              <i data-lucide="trash" class="w-4 h-4"></i>
-            </button>
+            <button onclick="restoreAccount('${a.id}')" class="px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg text-xs font-medium flex items-center gap-1"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i><span class="hidden sm:inline">Khôi phục</span></button>
+            <button onclick="permanentlyDeleteAccount('${a.id}')" class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg"><i data-lucide="trash" class="w-4 h-4"></i></button>
           </div>
         </div>
       `).join('');
@@ -1114,56 +1028,28 @@
     async function restoreAccount(id) {
       const idx = accounts.findIndex(a => a.id === id);
       if (idx !== -1) {
-        accounts[idx].deleted = false;
-        delete accounts[idx].deletedAt;
-        await pushToCloud();
-        renderTrashList();
-        updatePlatformFilter();
-        renderAccounts();
-        showToast('Đã khôi phục tài khoản!');
+        accounts[idx].deleted = false; delete accounts[idx].deletedAt;
+        await pushToCloud(); renderTrashList(); updatePlatformFilter(); renderAccounts(); showToast('Đã khôi phục tài khoản!');
       }
     }
-
     async function permanentlyDeleteAccount(id) {
       if (confirm('Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản này?')) {
         accounts = accounts.filter(a => id !== a.id);
-        await pushToCloud();
-        renderTrashList();
-        updatePlatformFilter();
-        renderAccounts();
-        showToast('Đã xóa vĩnh viễn.');
+        await pushToCloud(); renderTrashList(); updatePlatformFilter(); renderAccounts(); showToast('Đã xóa vĩnh viễn.');
       }
     }
-
     async function emptyTrashConfirm() {
       if (confirm('CẢNH BÁO: Xóa sạch toàn bộ thùng rác?')) {
         accounts = accounts.filter(a => !a.deleted);
-        await pushToCloud();
-        renderTrashList();
-        updatePlatformFilter();
-        renderAccounts();
-        showToast('Đã dọn sạch thùng rác.');
+        await pushToCloud(); renderTrashList(); updatePlatformFilter(); renderAccounts(); showToast('Đã dọn sạch thùng rác.');
       }
     }
 
     function showToast(msg) {
-      const t = document.getElementById('toast');
-      document.getElementById('toastMsg').innerText = msg;
-      t.classList.remove('translate-y-20', 'opacity-0');
-      setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2500);
+      const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg;
+      t.classList.remove('translate-y-20', 'opacity-0'); setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2500);
     }
-
-    function escapeHtml(string) {
-      return String(string || '').replace(/[&<>"']/g, function(s) {
-        return {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        }[s];
-      });
-    }
+    function escapeHtml(string) { return String(string || '').replace(/[&<>"']/g, function(s) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]; }); }
   </script>
 </body>
 </html>
