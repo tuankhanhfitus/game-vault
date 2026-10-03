@@ -42,6 +42,11 @@
     body { font-family: 'Inter', sans-serif; background-color: #090d16; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
     .font-gaming { font-family: 'Chakra Petch', sans-serif; }
     .neon-glow:hover { box-shadow: 0 0 20px rgba(139, 92, 246, 0.35); }
+    @keyframes modalPop {
+      0% { opacity: 0; transform: scale(0.92) translateY(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-animate { animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @media screen and (max-width: 768px) {
       input, select, textarea { font-size: 16px !important; }
     }
@@ -188,7 +193,7 @@
 
   <!-- MODAL NHẬP MÃ PIN (NGÂN HÀNG) -->
   <div id="pinModal" class="fixed inset-0 z-[60] bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="w-full max-w-xs sm:max-w-sm bg-cyber-800 border border-rose-500/30 rounded-2xl p-6 shadow-[0_0_40px_rgba(244,63,94,0.15)] relative text-center">
+    <div class="w-full max-w-xs sm:max-w-sm bg-cyber-800 border border-rose-500/30 rounded-2xl p-6 shadow-[0_0_40px_rgba(244,63,94,0.15)] relative text-center modal-animate">
       <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-rose-500/20 to-pink-500/20 border border-rose-500/50 flex items-center justify-center shadow-lg shadow-rose-500/20">
         <i data-lucide="lock-keyhole" class="w-8 h-8 text-rose-400"></i>
       </div>
@@ -207,9 +212,30 @@
     </div>
   </div>
 
+  <!-- MODAL XÁC NHẬN ĐĂNG XUẤT CUSTOM CSS -->
+  <div id="logoutModal" class="fixed inset-0 z-[70] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="w-full max-w-xs sm:max-w-sm bg-cyber-800 border border-rose-500/40 rounded-2xl p-6 shadow-[0_0_40px_rgba(244,63,94,0.25)] relative text-center modal-animate">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-rose-500/20 to-orange-500/20 border border-rose-500/50 flex items-center justify-center shadow-lg shadow-rose-500/20">
+        <i data-lucide="log-out" class="w-8 h-8 text-rose-400"></i>
+      </div>
+      <h3 class="text-lg sm:text-xl font-bold font-gaming text-rose-400 mb-1.5">Xác Nhận Đăng Xuất?</h3>
+      <p class="text-xs text-slate-400 mb-6 leading-relaxed">
+        Phiên đăng nhập và <span class="text-emerald-400 font-semibold">Master Password</span> lưu tạm trên thiết bị này sẽ bị xóa hoàn toàn để bảo mật.
+      </p>
+      <div class="flex gap-2.5">
+        <button type="button" onclick="closeLogoutModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs sm:text-sm font-medium transition active:scale-95">
+          Ở Lại
+        </button>
+        <button type="button" onclick="confirmLogout()" class="flex-1 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-rose-600/30 transition active:scale-95">
+          Đăng Xuất
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL THÊM / SỬA TÀI KHOẢN -->
   <div id="accountModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
-    <div class="w-full max-w-lg bg-cyber-800 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+    <div class="w-full max-w-lg bg-cyber-800 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto modal-animate">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-3 sm:mb-4">
         <h3 id="modalTitle" class="text-base sm:text-lg font-bold font-gaming text-cyan-400">Thêm Tài Khoản</h3>
         <button type="button" onclick="closeModal()" class="p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -219,7 +245,7 @@
         <input type="hidden" id="editAccountId">
         <input type="hidden" id="accCustomIconBase64">
 
-        <!-- Lựa chọn Danh mục (Thêm Ngân Hàng) -->
+        <!-- Lựa chọn Danh mục -->
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Phân loại *</label>
           <div class="grid grid-cols-3 gap-2">
@@ -306,7 +332,7 @@
 
   <!-- MODAL THÙNG RÁC -->
   <div id="trashModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4">
-    <div class="w-full max-w-2xl bg-cyber-800 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col max-h-[88vh]">
+    <div class="w-full max-w-2xl bg-cyber-800 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col max-h-[88vh] modal-animate">
       <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-3">
         <div class="flex items-center gap-2">
           <i data-lucide="trash-2" class="w-5 h-5 text-amber-400"></i>
@@ -354,8 +380,8 @@
     let masterKey = null;
     let accounts = [];
     let platformIcons = {};
-    let bankPinCode = null; // Mã PIN để vào thẻ Ngân Hàng
-    let isBankUnlocked = false; // Trạng thái đã mở khóa két ngân hàng chưa
+    let bankPinCode = null;
+    let isBankUnlocked = false;
     
     let isRegisterMode = false;
     let currentCategoryFilter = 'ALL';
@@ -373,17 +399,14 @@
 
       const n = (item.game || '').toLowerCase().trim();
       
-      // Mạng Xã Hội / Web
       if (n.includes('facebook') || n === 'fb') return `<div class="w-8 h-8 rounded-xl bg-[#1877F2]/20 border border-[#1877F2]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></div>`;
       if (n.includes('google') || n.includes('gmail')) return `<div class="w-8 h-8 rounded-xl bg-[#EA4335]/20 border border-[#EA4335]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#EA4335]" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg></div>`;
       if (n.includes('tiktok')) return `<div class="w-8 h-8 rounded-xl bg-[#EE1D52]/20 border border-[#EE1D52]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#EE1D52]" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-1.01-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></div>`;
       if (n.includes('telegram') || n === 'tele') return `<div class="w-8 h-8 rounded-xl bg-[#229ED9]/20 border border-[#229ED9]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#229ED9]" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.562 8.161c-.18.716-.962 4.084-1.362 5.75-.17.708-.431.945-.683.968-.55.05-1.005-.364-1.538-.713-.833-.546-1.304-.886-2.113-1.42-.934-.616-.328-.955.204-1.507.139-.144 2.55-2.336 2.597-2.535.006-.025.011-.118-.045-.168-.056-.05-.138-.033-.198-.02-.085.019-1.439.914-4.062 2.686-.384.263-.733.393-1.045.386-.344-.008-1.006-.195-1.498-.355-.604-.196-1.084-.3-1.042-.633.022-.174.266-.352.732-.535 2.868-1.249 4.782-2.073 5.74-2.472 2.73-.137 3.298 1.096 3.298 1.096z"/></svg></div>`;
       
-      // Game
       if (n.includes('steam')) return `<div class="w-8 h-8 rounded-xl bg-slate-700/50 border border-cyan-400/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-cyan-400" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.008l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.029 4.524 4.524s-2.03 4.524-4.524 4.524h-.105l-4.076 2.811c0 .052.005.105.005.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.155-3.331-2.677L.277 15.08C1.72 20.312 6.46 24 11.979 24c6.627 0 12-5.373 12-12s-5.373-12-12-12z"/></svg></div>`;
       if (n.includes('riot') || n.includes('valorant') || n.includes('lol')) return `<div class="w-8 h-8 rounded-xl bg-[#D13639]/20 border border-[#D13639]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#D13639]" viewBox="0 0 24 24"><path d="M13.414 1.707l-9.043 4.22 3.037 11.836 3.04-.647-.947-3.69 1.838-.392.83 3.235 2.072-.442-.832-3.236 1.839-.391.83 3.235 2.072-.442-.832-3.235 1.84-.392.83 3.235 3.003-.64L19.467 4.19zm-3.064 18.06l-3.315.706.745 2.905 3.314-.707zm5.955-1.267l-3.313.706.744 2.905 3.314-.706z"/></svg></div>`;
 
-      // Ngân hàng / Ví
       if (n.includes('momo')) return `<div class="w-8 h-8 rounded-xl bg-[#A50064]/20 border border-[#A50064]/40 flex items-center justify-center shrink-0 text-[10px] font-bold text-[#A50064]">MM</div>`;
       if (n.includes('vietcombank') || n === 'vcb') return `<div class="w-8 h-8 rounded-xl bg-[#71C25A]/20 border border-[#71C25A]/40 flex items-center justify-center shrink-0 text-[10px] font-bold text-[#71C25A]">VCB</div>`;
       if (n.includes('techcombank') || n === 'tcb') return `<div class="w-8 h-8 rounded-xl bg-[#EA1C24]/20 border border-[#EA1C24]/40 flex items-center justify-center shrink-0 text-[10px] font-bold text-[#EA1C24]">TCB</div>`;
@@ -391,7 +414,6 @@
       if (n.includes('binance')) return `<div class="w-8 h-8 rounded-xl bg-[#FCD535]/20 border border-[#FCD535]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#FCD535]" viewBox="0 0 24 24"><path d="M12.01 4.908L8.12 8.795H4.225l7.785-7.785 7.77 7.785h-3.895L12.01 4.908zM15.9 8.795l3.895 3.895-3.895 3.895h3.895l3.895-3.895-3.895-3.895H15.9zm-7.78 0H4.225L.33 12.69l3.895 3.895h3.895L4.225 12.69 8.12 8.795zm3.89 3.895l-3.895 3.895h7.79l-3.895-3.895zm0 2.308l2.022-2.022L12.01 10.954l-2.022 2.022 2.022 2.022zm0 4.197l-3.895-3.895H4.225l7.785 7.785 7.77-7.785h-3.895l-3.895 3.895z"/></svg></div>`;
       if (n.includes('paypal')) return `<div class="w-8 h-8 rounded-xl bg-[#00457C]/20 border border-[#00457C]/40 flex items-center justify-center shrink-0"><svg class="w-4 h-4 fill-[#0079C1]" viewBox="0 0 24 24"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106z"/></svg></div>`;
 
-      // Fallback
       const firstLetter = (item.game || 'V').trim().charAt(0).toUpperCase();
       let bgGrad = 'from-cyan-500/20 to-purple-500/20 text-cyan-400 border-cyan-500/40';
       if (item.category === 'SOCIAL') bgGrad = 'from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/40';
@@ -474,7 +496,6 @@
       });
     });
 
-    // ================= XỬ LÝ MÃ PIN NGÂN HÀNG =================
     function openBankTab() {
       if (isBankUnlocked) {
         applyCategoryTab('BANK');
@@ -530,7 +551,6 @@
       if (category === 'BANK') {
         openBankTab();
       } else {
-        // Tự động khóa két ngân hàng nếu bấm sang tab khác
         isBankUnlocked = false; 
         applyCategoryTab(category);
       }
@@ -637,7 +657,7 @@
         platformIcons = {};
         bankPinCode = null;
       }
-      isBankUnlocked = false; // Luôn khóa ngân hàng khi mới F5
+      isBankUnlocked = false;
       updateTrashCount();
       applyCategoryTab('ALL');
     }
@@ -658,10 +678,22 @@
       updateTrashCount();
     }
 
+    // ================= XỬ LÝ MODAL XÁC NHẬN ĐĂNG XUẤT =================
     function lockVault() {
-      if (!confirm('Bạn có chắc chắn muốn đăng xuất? Phiên đăng nhập và Master Password lưu tạm trên thiết bị này sẽ bị xóa.')) {
-        return;
-      }
+      const modal = document.getElementById('logoutModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeLogoutModal() {
+      const modal = document.getElementById('logoutModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function confirmLogout() {
+      closeLogoutModal();
       auth.signOut();
       localStorage.removeItem(MASTER_KEY_STORAGE);
       currentUser = null;
@@ -673,11 +705,10 @@
       document.getElementById('cloudEmail').readOnly = false;
       document.getElementById('accountsGrid').innerHTML = '';
       document.getElementById('lockScreen').classList.remove('hidden');
-      showToast('Đã đăng xuất.');
+      showToast('Đã đăng xuất và khóa két an toàn.');
     }
 
     function exportToExcel() {
-      // Ẩn tài khoản ngân hàng nếu chưa mở khóa két
       const activeList = accounts.filter(a => {
         if (a.deleted) return false;
         if (a.category === 'BANK' && !isBankUnlocked) return false;
@@ -814,7 +845,6 @@
 
       const filtered = accounts.filter(a => {
         if (a.deleted) return false;
-        // BẢO MẬT: Ẩn tài khoản Bank nếu đang ở Tab Tất Cả, HOẶC nếu két chưa mở
         if (currentCategoryFilter === 'ALL' && a.category === 'BANK') return false;
         if (a.category === 'BANK' && !isBankUnlocked) return false;
         if (currentCategoryFilter !== 'ALL' && a.category !== currentCategoryFilter) return false;
@@ -972,7 +1002,6 @@
       await pushToCloud();
       closeModal();
       
-      // Nếu vừa lưu thẻ Ngân hàng, mở khóa luôn két để xem
       if (selectedCategory === 'BANK') {
         isBankUnlocked = true;
         applyCategoryTab('BANK');
