@@ -574,7 +574,11 @@
         }
       });
 
-      updatePlatformFilter();
+      // Tự động đưa bộ lọc về 'ALL' khi chuyển tab danh mục
+      const select = document.getElementById('platformFilterSelect');
+      if (select) select.value = 'ALL';
+
+      updatePlatformFilter(true);
       renderAccounts();
     }
 
@@ -678,7 +682,6 @@
       updateTrashCount();
     }
 
-    // ================= XỬ LÝ MODAL XÁC NHẬN ĐĂNG XUẤT =================
     function lockVault() {
       const modal = document.getElementById('logoutModal');
       modal.classList.remove('hidden');
@@ -813,9 +816,9 @@
       reader.readAsArrayBuffer(file);
     }
 
-    function updatePlatformFilter() {
+    function updatePlatformFilter(resetToAll = false) {
       const select = document.getElementById('platformFilterSelect');
-      const val = select.value;
+      const val = resetToAll ? 'ALL' : select.value;
       const activeList = accounts.filter(a => {
         if (a.deleted) return false;
         if (currentCategoryFilter === 'ALL' && a.category === 'BANK') return false;
@@ -830,7 +833,12 @@
         opt.value = g; opt.innerText = g;
         select.appendChild(opt);
       });
-      select.value = val;
+
+      if (!resetToAll && platforms.includes(val)) {
+        select.value = val;
+      } else {
+        select.value = 'ALL';
+      }
     }
 
     function updateTrashCount() {
@@ -849,7 +857,7 @@
         if (a.category === 'BANK' && !isBankUnlocked) return false;
         if (currentCategoryFilter !== 'ALL' && a.category !== currentCategoryFilter) return false;
         
-        const mg = (fg === 'ALL') || (a.game === fg);
+        const mg = (!fg || fg === 'ALL') || (a.game === fg);
         const mq = !q || a.game.toLowerCase().includes(q) || a.user.toLowerCase().includes(q) || (a.email && a.email.toLowerCase().includes(q));
         return mg && mq;
       });
