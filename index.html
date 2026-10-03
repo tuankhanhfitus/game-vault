@@ -63,7 +63,7 @@
       z-index: 50;
     }
     .drag-handle {
-      touch-action: none; /* Giúp kéo trên màn hình cảm ứng không bị trôi trang */
+      touch-action: none;
     }
     @media screen and (max-width: 768px) {
       input, select, textarea { font-size: 16px !important; }
@@ -184,29 +184,20 @@
         </button>
       </div>
       <span class="hidden lg:inline-flex items-center gap-1 text-[11px] text-slate-400">
-        <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-cyan-400"></i> Nhấn giữ nút 6 chấm trên thẻ để kéo thả vị trí
+        <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-cyan-400"></i> Giữ nút 6 chấm trên thẻ để kéo thả sắp xếp
       </span>
     </div>
 
-    <!-- Thanh tìm kiếm, Lọc, Sắp xếp & Thêm mới -->
+    <!-- Thanh tìm kiếm, Lọc Nền tảng & Thêm mới -->
     <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center justify-between">
       <div class="flex flex-1 flex-col sm:flex-row gap-2">
         <div class="relative flex-1">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
           <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm kiếm tài khoản..." class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
         </div>
-        <div class="flex gap-2">
-          <select id="platformFilterSelect" onchange="renderAccounts()" class="flex-1 sm:flex-none px-3 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-slate-300 focus:outline-none focus:border-cyan-500">
-            <option value="ALL">Tất cả Nền tảng</option>
-          </select>
-          <select id="sortSelect" onchange="handleSortChange()" class="flex-1 sm:flex-none px-3 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-cyan-300 focus:outline-none focus:border-cyan-500">
-            <option value="CUSTOM">✋ Tự sắp xếp (Kéo thả)</option>
-            <option value="GAME_ASC">🔤 Nền tảng (A → Z)</option>
-            <option value="GAME_DESC">🔤 Nền tảng (Z → A)</option>
-            <option value="USER_ASC">👤 User (A → Z)</option>
-            <option value="USER_DESC">👤 User (Z → A)</option>
-          </select>
-        </div>
+        <select id="platformFilterSelect" onchange="renderAccounts()" class="px-3 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-slate-300 focus:outline-none focus:border-cyan-500">
+          <option value="ALL">Tất cả Nền tảng</option>
+        </select>
       </div>
       <button onclick="openModal()" class="w-full sm:w-auto px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shadow-cyan-500/10">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
@@ -537,17 +528,15 @@
 
       sortableInstance = new Sortable(grid, {
         animation: 220,
-        handle: '.drag-handle', // Chỉ kéo khi giữ vào nút 6 chấm để không vướng lúc bấm nút Copy
+        handle: '.drag-handle',
         ghostClass: 'sortable-ghost',
         dragClass: 'sortable-drag',
         onEnd: async function () {
-          // Khi người dùng thả thẻ ra: Cập nhật lại mảng accounts theo đúng thứ tự trên màn hình
           const cardElements = Array.from(grid.children);
           const visibleIds = cardElements.map(el => el.getAttribute('data-id')).filter(Boolean);
 
           if (visibleIds.length <= 1) return;
 
-          // Tìm các vị trí index trong mảng gốc `accounts` tương ứng với các thẻ đang hiển thị
           const originalIndices = [];
           const movedItemsMap = {};
 
@@ -558,41 +547,15 @@
             }
           });
 
-          // Gán lại thứ tự mới vào đúng các vị trí đó trong mảng gốc
           originalIndices.forEach((origIdx, i) => {
             const newId = visibleIds[i];
             accounts[origIdx] = movedItemsMap[newId];
           });
 
-          // Đưa ô chọn sắp xếp về chế độ Tự sắp xếp
-          const sortEl = document.getElementById('sortSelect');
-          if (sortEl) sortEl.value = 'CUSTOM';
-
           await pushToCloud();
           showToast('Đã lưu vị trí sắp xếp mới!');
         }
       });
-    }
-
-    async function handleSortChange() {
-      const sortMode = document.getElementById('sortSelect').value;
-      if (sortMode === 'CUSTOM') {
-        renderAccounts();
-        return;
-      }
-
-      // Nếu chọn sắp xếp A-Z, sắp xếp trực tiếp và lưu thứ tự mới lên Cloud
-      accounts.sort((a, b) => {
-        if (sortMode === 'GAME_ASC') return (a.game || '').localeCompare(b.game || '', 'vi', { sensitivity: 'base' });
-        if (sortMode === 'GAME_DESC') return (b.game || '').localeCompare(a.game || '', 'vi', { sensitivity: 'base' });
-        if (sortMode === 'USER_ASC') return (a.user || '').localeCompare(b.user || '', 'vi', { sensitivity: 'base' });
-        if (sortMode === 'USER_DESC') return (b.user || '').localeCompare(a.user || '', 'vi', { sensitivity: 'base' });
-        return 0;
-      });
-
-      await pushToCloud();
-      renderAccounts();
-      showToast('Đã sắp xếp danh sách!');
     }
 
     function openBankTab() {
