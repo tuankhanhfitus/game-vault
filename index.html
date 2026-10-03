@@ -659,6 +659,9 @@
     }
 
     function lockVault() {
+      if (!confirm('Bạn có chắc chắn muốn đăng xuất? Phiên đăng nhập và Master Password lưu tạm trên thiết bị này sẽ bị xóa.')) {
+        return;
+      }
       auth.signOut();
       localStorage.removeItem(MASTER_KEY_STORAGE);
       currentUser = null;
