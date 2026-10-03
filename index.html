@@ -12,6 +12,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <!-- Thư viện Kéo Thả mượt trên cả PC & Mobile -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
@@ -47,6 +49,22 @@
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
     .modal-animate { animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    /* Hiệu ứng khi đang nhấn giữ kéo thẻ */
+    .sortable-ghost {
+      opacity: 0.3;
+      border: 2px dashed #06b6d4 !important;
+      background-color: #090d16 !important;
+    }
+    .sortable-drag {
+      cursor: grabbing !important;
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.5) !important;
+      transform: scale(1.02);
+      z-index: 50;
+    }
+    .drag-handle {
+      touch-action: none; /* Giúp kéo trên màn hình cảm ứng không bị trôi trang */
+    }
     @media screen and (max-width: 768px) {
       input, select, textarea { font-size: 16px !important; }
     }
@@ -150,31 +168,45 @@
   <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full space-y-4 sm:space-y-6">
 
     <!-- Bộ lọc danh mục (Tabs) -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 no-scrollbar">
-      <button onclick="setCategoryTab('ALL')" id="tabCatAll" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition">
-        <i data-lucide="layers" class="w-3.5 h-3.5"></i> <span>Tất Cả</span>
-      </button>
-      <button onclick="setCategoryTab('GAME')" id="tabCatGame" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
-        <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-purple-400"></i> <span>Game</span>
-      </button>
-      <button onclick="setCategoryTab('SOCIAL')" id="tabCatSocial" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
-        <i data-lucide="share-2" class="w-3.5 h-3.5 text-pink-400"></i> <span>Mạng Xã Hội</span>
-      </button>
-      <button onclick="setCategoryTab('BANK')" id="tabCatBank" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-rose-400 border border-slate-700/60 flex items-center gap-1.5 transition">
-        <i data-lucide="landmark" class="w-3.5 h-3.5 text-rose-400"></i> <span>Ngân Hàng 🔒</span>
-      </button>
+    <div class="flex items-center justify-between gap-2 overflow-x-auto pb-2 border-b border-slate-800 no-scrollbar">
+      <div class="flex items-center gap-2">
+        <button onclick="setCategoryTab('ALL')" id="tabCatAll" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 flex items-center gap-1.5 transition">
+          <i data-lucide="layers" class="w-3.5 h-3.5"></i> <span>Tất Cả</span>
+        </button>
+        <button onclick="setCategoryTab('GAME')" id="tabCatGame" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
+          <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-purple-400"></i> <span>Game</span>
+        </button>
+        <button onclick="setCategoryTab('SOCIAL')" id="tabCatSocial" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition">
+          <i data-lucide="share-2" class="w-3.5 h-3.5 text-pink-400"></i> <span>Mạng Xã Hội</span>
+        </button>
+        <button onclick="setCategoryTab('BANK')" id="tabCatBank" class="shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-rose-400 border border-slate-700/60 flex items-center gap-1.5 transition">
+          <i data-lucide="landmark" class="w-3.5 h-3.5 text-rose-400"></i> <span>Ngân Hàng 🔒</span>
+        </button>
+      </div>
+      <span class="hidden lg:inline-flex items-center gap-1 text-[11px] text-slate-400">
+        <i data-lucide="grip-vertical" class="w-3.5 h-3.5 text-cyan-400"></i> Nhấn giữ nút 6 chấm trên thẻ để kéo thả vị trí
+      </span>
     </div>
 
-    <!-- Thanh tìm kiếm & Thêm mới -->
+    <!-- Thanh tìm kiếm, Lọc, Sắp xếp & Thêm mới -->
     <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center justify-between">
       <div class="flex flex-1 flex-col sm:flex-row gap-2">
         <div class="relative flex-1">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
           <input type="text" id="searchInput" oninput="renderAccounts()" placeholder="Tìm kiếm tài khoản..." class="w-full pl-10 pr-4 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:border-cyan-500">
         </div>
-        <select id="platformFilterSelect" onchange="renderAccounts()" class="px-3 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-slate-300 focus:outline-none">
-          <option value="ALL">Tất cả Nền tảng</option>
-        </select>
+        <div class="flex gap-2">
+          <select id="platformFilterSelect" onchange="renderAccounts()" class="flex-1 sm:flex-none px-3 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-slate-300 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Tất cả Nền tảng</option>
+          </select>
+          <select id="sortSelect" onchange="handleSortChange()" class="flex-1 sm:flex-none px-3 py-2.5 bg-cyber-800 border border-slate-700 rounded-xl text-xs sm:text-sm text-cyan-300 focus:outline-none focus:border-cyan-500">
+            <option value="CUSTOM">✋ Tự sắp xếp (Kéo thả)</option>
+            <option value="GAME_ASC">🔤 Nền tảng (A → Z)</option>
+            <option value="GAME_DESC">🔤 Nền tảng (Z → A)</option>
+            <option value="USER_ASC">👤 User (A → Z)</option>
+            <option value="USER_DESC">👤 User (Z → A)</option>
+          </select>
+        </div>
       </div>
       <button onclick="openModal()" class="w-full sm:w-auto px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition active:scale-95 shadow-lg shadow-cyan-500/10">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
@@ -245,7 +277,6 @@
         <input type="hidden" id="editAccountId">
         <input type="hidden" id="accCustomIconBase64">
 
-        <!-- Lựa chọn Danh mục -->
         <div>
           <label class="block text-xs font-medium text-slate-300 mb-1">Phân loại *</label>
           <div class="grid grid-cols-3 gap-2">
@@ -382,6 +413,7 @@
     let platformIcons = {};
     let bankPinCode = null;
     let isBankUnlocked = false;
+    let sortableInstance = null;
     
     let isRegisterMode = false;
     let currentCategoryFilter = 'ALL';
@@ -478,6 +510,8 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      initDragAndDrop();
+
       auth.onAuthStateChanged(async (user) => {
         if (user) {
           currentUser = user;
@@ -495,6 +529,71 @@
         }
       });
     });
+
+    // ================= KHỞI TẠO KÉO THẢ (DRAG & DROP) =================
+    function initDragAndDrop() {
+      const grid = document.getElementById('accountsGrid');
+      if (!grid) return;
+
+      sortableInstance = new Sortable(grid, {
+        animation: 220,
+        handle: '.drag-handle', // Chỉ kéo khi giữ vào nút 6 chấm để không vướng lúc bấm nút Copy
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        onEnd: async function () {
+          // Khi người dùng thả thẻ ra: Cập nhật lại mảng accounts theo đúng thứ tự trên màn hình
+          const cardElements = Array.from(grid.children);
+          const visibleIds = cardElements.map(el => el.getAttribute('data-id')).filter(Boolean);
+
+          if (visibleIds.length <= 1) return;
+
+          // Tìm các vị trí index trong mảng gốc `accounts` tương ứng với các thẻ đang hiển thị
+          const originalIndices = [];
+          const movedItemsMap = {};
+
+          accounts.forEach((acc, idx) => {
+            if (visibleIds.includes(acc.id)) {
+              originalIndices.push(idx);
+              movedItemsMap[acc.id] = acc;
+            }
+          });
+
+          // Gán lại thứ tự mới vào đúng các vị trí đó trong mảng gốc
+          originalIndices.forEach((origIdx, i) => {
+            const newId = visibleIds[i];
+            accounts[origIdx] = movedItemsMap[newId];
+          });
+
+          // Đưa ô chọn sắp xếp về chế độ Tự sắp xếp
+          const sortEl = document.getElementById('sortSelect');
+          if (sortEl) sortEl.value = 'CUSTOM';
+
+          await pushToCloud();
+          showToast('Đã lưu vị trí sắp xếp mới!');
+        }
+      });
+    }
+
+    async function handleSortChange() {
+      const sortMode = document.getElementById('sortSelect').value;
+      if (sortMode === 'CUSTOM') {
+        renderAccounts();
+        return;
+      }
+
+      // Nếu chọn sắp xếp A-Z, sắp xếp trực tiếp và lưu thứ tự mới lên Cloud
+      accounts.sort((a, b) => {
+        if (sortMode === 'GAME_ASC') return (a.game || '').localeCompare(b.game || '', 'vi', { sensitivity: 'base' });
+        if (sortMode === 'GAME_DESC') return (b.game || '').localeCompare(a.game || '', 'vi', { sensitivity: 'base' });
+        if (sortMode === 'USER_ASC') return (a.user || '').localeCompare(b.user || '', 'vi', { sensitivity: 'base' });
+        if (sortMode === 'USER_DESC') return (b.user || '').localeCompare(a.user || '', 'vi', { sensitivity: 'base' });
+        return 0;
+      });
+
+      await pushToCloud();
+      renderAccounts();
+      showToast('Đã sắp xếp danh sách!');
+    }
 
     function openBankTab() {
       if (isBankUnlocked) {
@@ -876,10 +975,14 @@
         const tagTxt = isBank ? 'BANK' : (isSocial ? 'MXH' : 'GAME');
 
         return `
-          <div class="bg-cyber-800 border ${borderGlow} rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between transition">
+          <div data-id="${a.id}" class="bg-cyber-800 border ${borderGlow} rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between transition select-none">
             <div>
               <div class="flex items-center justify-between mb-2.5 sm:mb-3">
-                <div class="flex items-center gap-2.5 min-w-0">
+                <div class="flex items-center gap-2 min-w-0">
+                  <!-- NÚT NẮM KÉO THẢ (DRAG HANDLE) -->
+                  <div class="drag-handle cursor-grab active:cursor-grabbing p-1 -ml-1 text-slate-500 hover:text-cyan-400 transition" title="Nhấn giữ để kéo đổi vị trí">
+                    <i data-lucide="grip-vertical" class="w-4 h-4"></i>
+                  </div>
                   ${getPlatformIcon(a)}
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5">
