@@ -1,14 +1,20 @@
 {
   "name": "Account Vault",
   "short_name": "Vault",
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#090d16",
   "theme_color": "#090d16",
   "description": "Quản lý tài khoản an toàn trên Cloud",
   "icons": [
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/GitHub_Invertocat_Logo.svg/1024px-GitHub_Invertocat_Logo.svg.png",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/GitHub_Invertocat_Logo.svg/192px-GitHub_Invertocat_Logo.svg.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/GitHub_Invertocat_Logo.svg/512px-GitHub_Invertocat_Logo.svg.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
