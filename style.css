@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+body { 
+  font-family: 'Inter', sans-serif; 
+  background-color: #090d16; 
+  color: #f1f5f9; 
+  -webkit-tap-highlight-color: transparent; 
+}
+
+.font-gaming { font-family: 'Chakra Petch', sans-serif; }
+
+.neon-glow:hover { box-shadow: 0 0 20px rgba(139, 92, 246, 0.35); }
+
+@keyframes modalPop {
+  0% { opacity: 0; transform: scale(0.92) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-animate { animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Hiệu ứng khi đang nhấn giữ kéo thẻ */
+.sortable-ghost {
+  opacity: 0.3;
+  border: 2px dashed #06b6d4 !important;
+  background-color: #090d16 !important;
+}
+
+.sortable-drag {
+  cursor: grabbing !important;
+  box-shadow: 0 0 30px rgba(6, 182, 212, 0.5) !important;
+  transform: scale(1.02);
+  z-index: 50;
+}
+
+.drag-handle {
+  touch-action: none;
+}
+
+@media screen and (max-width: 768px) {
+  input, select, textarea { font-size: 16px !important; }
+}
