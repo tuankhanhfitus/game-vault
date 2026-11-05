@@ -23,6 +23,7 @@ let sortableInstance = null;
 
 let isRegisterMode = false;
 let currentCategoryFilter = 'ALL';
+let targetDeleteId = null; // Dùng cho modal xóa vĩnh viễn
 
 function getPlatformSharedIcon(gameName) {
   if (!gameName) return '';
@@ -659,6 +660,31 @@ function openModal(editId = null) {
 }
 
 function editAccount(id) { openModal(id); }
+
+function duplicateAccount(id) {
+  const item = accounts.find(a => a.id === id);
+  if (!item) return;
+
+  openModal();
+  document.getElementById('modalTitle').innerText = 'Nhân Bản Tài Khoản';
+  document.getElementsByName('accCategory').forEach(r => r.checked = (r.value === (item.category || 'GAME')));
+  document.getElementById('accGame').value = item.game || '';
+  document.getElementById('accUser').value = item.user || '';
+  document.getElementById('accPass').value = item.password || '';
+  document.getElementById('accEmail').value = item.email || '';
+  document.getElementById('accPhone').value = item.phone || '';
+  document.getElementById('accNotes').value = item.notes || '';
+
+  const existingImg = getPlatformSharedIcon(item.game);
+  if (existingImg) {
+    if (existingImg.startsWith('data:image')) document.getElementById('accCustomIconBase64').value = existingImg;
+    else document.getElementById('accIconUrl').value = existingImg;
+    updateIconPreview(existingImg);
+  }
+
+  showToast('Đã copy dữ liệu! Hãy sửa thông tin và bấm Lưu.');
+}
+
 function closeModal() { document.getElementById('accountModal').classList.add('hidden'); document.getElementById('accountModal').classList.remove('flex'); }
 
 async function saveAccount(e) {
@@ -751,8 +777,6 @@ async function restoreAccount(id) {
     await pushToCloud(); renderTrashList(); updatePlatformFilter(); renderAccounts(); showToast('Đã khôi phục tài khoản!');
   }
 }
-// Biến lưu trữ ID của tài khoản đang muốn xóa (nếu bằng 'ALL' là dọn sạch thùng rác)
-let targetDeleteId = null;
 
 function permanentlyDeleteAccount(id) {
   targetDeleteId = id;
@@ -794,13 +818,11 @@ async function executeDelete() {
     showToast('Đã xóa vĩnh viễn.');
   }
 
-  // Cập nhật lên cloud và render lại UI
   await pushToCloud(); 
   renderTrashList(); 
   updatePlatformFilter(); 
   renderAccounts(); 
   
-  // Đóng bảng thông báo
   closeDeleteConfirmModal();
 }
 
@@ -816,34 +838,4 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js');
   });
-}
-function duplicateAccount(id) {
-  const item = accounts.find(a => a.id === id);
-  if (!item) return;
-
-  // 1. Mở modal ở chế độ "Thêm mới" (hàm openModal tự động reset form và xóa editAccountId)
-  openModal();
-  
-  // 2. Đổi tiêu đề để bạn biết đang ở chế độ copy
-  document.getElementById('modalTitle').innerText = 'Nhân Bản Tài Khoản';
-
-  // 3. Điền sẵn toàn bộ dữ liệu từ thẻ cũ vào form
-  document.getElementsByName('accCategory').forEach(r => r.checked = (r.value === (item.category || 'GAME')));
-  document.getElementById('accGame').value = item.game || '';
-  document.getElementById('accUser').value = item.user || '';
-  document.getElementById('accPass').value = item.password || '';
-  document.getElementById('accEmail').value = item.email || '';
-  document.getElementById('accPhone').value = item.phone || '';
-  document.getElementById('accNotes').value = item.notes || '';
-
-  // 4. Xử lý tải lại logo nền tảng nếu có
-  const existingImg = getPlatformSharedIcon(item.game);
-  if (existingImg) {
-    if (existingImg.startsWith('data:image')) document.getElementById('accCustomIconBase64').value = existingImg;
-    else document.getElementById('accIconUrl').value = existingImg;
-    updateIconPreview(existingImg);
-  }
-
-  // Báo cho người dùng biết
-  showToast('Đã copy dữ liệu! Hãy sửa thông tin và bấm Lưu.');
 }
