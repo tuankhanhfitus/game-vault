@@ -50,7 +50,7 @@
     }
   </script>
 
-  <!-- Nhúng file style.css -->
+  <!-- Nhúng file CSS (style.css) -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -361,6 +361,7 @@
       </div>
     </div>
   </div>
+
   <!-- MODAL XÁC NHẬN XÓA VĨNH VIỄN -->
   <div id="deleteConfirmModal" class="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
     <div class="w-full max-w-xs sm:max-w-sm bg-cyber-800 border border-rose-500/40 rounded-2xl p-6 shadow-[0_0_40px_rgba(244,63,94,0.25)] relative text-center modal-animate">
@@ -381,11 +382,12 @@
       </div>
     </div>
   </div>
+
   <div id="toast" class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-[200] bg-cyber-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none shadow-2xl">
     <span id="toastMsg">Thành công</span>
   </div>
 
-  <!-- Nhúng file app.js -->
+  <!-- Nhúng file app.js chứa toàn bộ logic -->
   <script src="app.js" defer></script>
 </body>
 </html>
