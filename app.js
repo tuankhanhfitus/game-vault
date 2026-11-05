@@ -751,17 +751,57 @@ async function restoreAccount(id) {
     await pushToCloud(); renderTrashList(); updatePlatformFilter(); renderAccounts(); showToast('Đã khôi phục tài khoản!');
   }
 }
-async function permanentlyDeleteAccount(id) {
-  if (confirm('Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản này?')) {
-    accounts = accounts.filter(a => id !== a.id);
-    await pushToCloud(); renderTrashList(); updatePlatformFilter(); renderAccounts(); showToast('Đã xóa vĩnh viễn.');
-  }
+// Biến lưu trữ ID của tài khoản đang muốn xóa (nếu bằng 'ALL' là dọn sạch thùng rác)
+let targetDeleteId = null;
+
+function permanentlyDeleteAccount(id) {
+  targetDeleteId = id;
+  document.getElementById('deleteConfirmTitle').innerText = 'Xóa Vĩnh Viễn?';
+  document.getElementById('deleteConfirmText').innerText = 'Tài khoản này sẽ bị xóa vĩnh viễn khỏi đám mây và không thể khôi phục.';
+  
+  const modal = document.getElementById('deleteConfirmModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  lucide.createIcons();
 }
-async function emptyTrashConfirm() {
-  if (confirm('CẢNH BÁO: Xóa sạch toàn bộ thùng rác?')) {
+
+function emptyTrashConfirm() {
+  targetDeleteId = 'ALL';
+  document.getElementById('deleteConfirmTitle').innerText = 'Dọn Sạch Thùng Rác?';
+  document.getElementById('deleteConfirmText').innerText = 'CẢNH BÁO: Toàn bộ tài khoản trong thùng rác sẽ bị xóa sạch và không thể khôi phục.';
+  
+  const modal = document.getElementById('deleteConfirmModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  lucide.createIcons();
+}
+
+function closeDeleteConfirmModal() {
+  const modal = document.getElementById('deleteConfirmModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  targetDeleteId = null;
+}
+
+async function executeDelete() {
+  if (!targetDeleteId) return;
+
+  if (targetDeleteId === 'ALL') {
     accounts = accounts.filter(a => !a.deleted);
-    await pushToCloud(); renderTrashList(); updatePlatformFilter(); renderAccounts(); showToast('Đã dọn sạch thùng rác.');
+    showToast('Đã dọn sạch thùng rác.');
+  } else {
+    accounts = accounts.filter(a => targetDeleteId !== a.id);
+    showToast('Đã xóa vĩnh viễn.');
   }
+
+  // Cập nhật lên cloud và render lại UI
+  await pushToCloud(); 
+  renderTrashList(); 
+  updatePlatformFilter(); 
+  renderAccounts(); 
+  
+  // Đóng bảng thông báo
+  closeDeleteConfirmModal();
 }
 
 function showToast(msg) {
