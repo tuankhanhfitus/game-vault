@@ -839,3 +839,23 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js');
   });
 }
+async function resetFirebasePassword() {
+  const emailInput = document.getElementById('cloudEmail').value.trim();
+  const errorEl = document.getElementById('authErrorMsg');
+  
+  if (!emailInput) {
+    errorEl.innerText = "Vui lòng nhập Email của bạn vào ô trên cùng để nhận link đặt lại mật khẩu!";
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    errorEl.classList.add('hidden');
+    // Firebase tự động gửi email chứa link reset password
+    await auth.sendPasswordResetEmail(emailInput);
+    showToast('Đã gửi link khôi phục! Vui lòng kiểm tra hộp thư đến (hoặc thư rác) của bạn.');
+  } catch (err) {
+    errorEl.innerText = "Lỗi: " + err.message;
+    errorEl.classList.remove('hidden');
+  }
+}
