@@ -568,6 +568,7 @@ function renderAccounts() {
               </div>
             </div>
             <div class="flex gap-1 shrink-0">
+              <button onclick="duplicateAccount('${a.id}')" title="Nhân bản (Copy)" class="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-700/60 rounded-lg transition active:scale-90"><i data-lucide="copy-plus" class="w-4 h-4"></i></button>
               <button onclick="editAccount('${a.id}')" title="Sửa" class="p-1.5 text-slate-400 hover:text-cyan-300 hover:bg-slate-700/60 rounded-lg transition active:scale-90"><i data-lucide="edit" class="w-4 h-4"></i></button>
               <button onclick="moveToTrash('${a.id}')" title="Xóa" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-700/60 rounded-lg transition active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
             </div>
@@ -775,4 +776,34 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js');
   });
+}
+function duplicateAccount(id) {
+  const item = accounts.find(a => a.id === id);
+  if (!item) return;
+
+  // 1. Mở modal ở chế độ "Thêm mới" (hàm openModal tự động reset form và xóa editAccountId)
+  openModal();
+  
+  // 2. Đổi tiêu đề để bạn biết đang ở chế độ copy
+  document.getElementById('modalTitle').innerText = 'Nhân Bản Tài Khoản';
+
+  // 3. Điền sẵn toàn bộ dữ liệu từ thẻ cũ vào form
+  document.getElementsByName('accCategory').forEach(r => r.checked = (r.value === (item.category || 'GAME')));
+  document.getElementById('accGame').value = item.game || '';
+  document.getElementById('accUser').value = item.user || '';
+  document.getElementById('accPass').value = item.password || '';
+  document.getElementById('accEmail').value = item.email || '';
+  document.getElementById('accPhone').value = item.phone || '';
+  document.getElementById('accNotes').value = item.notes || '';
+
+  // 4. Xử lý tải lại logo nền tảng nếu có
+  const existingImg = getPlatformSharedIcon(item.game);
+  if (existingImg) {
+    if (existingImg.startsWith('data:image')) document.getElementById('accCustomIconBase64').value = existingImg;
+    else document.getElementById('accIconUrl').value = existingImg;
+    updateIconPreview(existingImg);
+  }
+
+  // Báo cho người dùng biết
+  showToast('Đã copy dữ liệu! Hãy sửa thông tin và bấm Lưu.');
 }
