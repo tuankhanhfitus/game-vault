@@ -361,7 +361,26 @@
       </div>
     </div>
   </div>
-
+  <!-- MODAL XÁC NHẬN XÓA VĨNH VIỄN -->
+  <div id="deleteConfirmModal" class="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="w-full max-w-xs sm:max-w-sm bg-cyber-800 border border-rose-500/40 rounded-2xl p-6 shadow-[0_0_40px_rgba(244,63,94,0.25)] relative text-center modal-animate">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-rose-500/20 to-orange-500/20 border border-rose-500/50 flex items-center justify-center shadow-lg shadow-rose-500/20">
+        <i data-lucide="alert-triangle" class="w-8 h-8 text-rose-400"></i>
+      </div>
+      <h3 id="deleteConfirmTitle" class="text-lg sm:text-xl font-bold font-gaming text-rose-400 mb-1.5">Xác Nhận Xóa?</h3>
+      <p id="deleteConfirmText" class="text-xs text-slate-400 mb-6 leading-relaxed">
+        Tài khoản này sẽ bị xóa vĩnh viễn khỏi đám mây và không thể khôi phục.
+      </p>
+      <div class="flex gap-2.5">
+        <button type="button" onclick="closeDeleteConfirmModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs sm:text-sm font-medium transition active:scale-95">
+          Hủy
+        </button>
+        <button type="button" onclick="executeDelete()" class="flex-1 py-2.5 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-rose-600/30 transition active:scale-95">
+          Xóa Vĩnh Viễn
+        </button>
+      </div>
+    </div>
+  </div>
   <div id="toast" class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-[200] bg-cyber-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none shadow-2xl">
     <span id="toastMsg">Thành công</span>
   </div>
