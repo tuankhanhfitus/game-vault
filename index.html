@@ -81,7 +81,10 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold uppercase text-slate-300 mb-1">Mật khẩu Firebase</label>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-semibold uppercase text-slate-300">Mật khẩu Firebase</label>
+            <button type="button" onclick="resetFirebasePassword()" class="text-[11px] text-cyan-400 hover:text-cyan-300 hover:underline transition">Quên MK?</button>
+          </div>
           <input type="password" id="cloudPassword" required placeholder="Tối thiểu 6 ký tự"
             class="w-full px-3.5 py-2.5 bg-cyber-900 border border-slate-700 rounded-xl text-white text-sm focus:border-cyan-500 focus:outline-none">
         </div>
