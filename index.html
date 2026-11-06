@@ -386,11 +386,36 @@
     </div>
   </div>
 
+  <!-- MODAL XÁC NHẬN MẬT KHẨU XUẤT FILE EXCEL -->
+  <div id="exportConfirmModal" class="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="w-full max-w-xs sm:max-w-sm bg-cyber-800 border border-emerald-500/40 rounded-2xl p-6 shadow-[0_0_40px_rgba(16,185,129,0.2)] relative text-center modal-animate">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 border border-emerald-500/50 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <i data-lucide="file-key" class="w-8 h-8 text-emerald-400"></i>
+      </div>
+      <h3 class="text-lg sm:text-xl font-bold font-gaming text-emerald-400 mb-1.5">Bảo Mật Xuất File</h3>
+      <p class="text-xs text-slate-400 mb-5 leading-relaxed">
+        Vui lòng nhập <span class="text-emerald-400 font-semibold">Master Password</span> để xác nhận quyền tải xuống toàn bộ dữ liệu.
+      </p>
+      <form onsubmit="verifyExportPassword(event)" class="space-y-4">
+        <input type="password" id="exportPassInput" required placeholder="Nhập Master Password..."
+          class="w-full px-4 py-3 bg-cyber-900 border border-slate-700 rounded-xl text-white text-sm focus:border-emerald-500 focus:outline-none text-center font-mono">
+        <div class="flex gap-2.5">
+          <button type="button" onclick="closeExportModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs sm:text-sm font-medium transition active:scale-95">
+            Hủy
+          </button>
+          <button type="submit" class="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-lg shadow-emerald-600/30 transition active:scale-95">
+            Xác Nhận Xuất
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="toast" class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-[200] bg-cyber-700 border border-slate-600 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none shadow-2xl">
     <span id="toastMsg">Thành công</span>
   </div>
 
-  <!-- Nhúng file app.js chứa toàn bộ logic -->
+  <!-- Nhúng file JavaScript chứa toàn bộ logic -->
   <script src="app.js" defer></script>
 </body>
 </html>
