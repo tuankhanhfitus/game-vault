@@ -23,7 +23,7 @@ let sortableInstance = null;
 
 let isRegisterMode = false;
 let currentCategoryFilter = 'ALL';
-let targetDeleteId = null; // Dùng cho modal xóa vĩnh viễn
+let targetDeleteId = null;
 
 function getPlatformSharedIcon(gameName) {
   if (!gameName) return '';
@@ -61,60 +61,6 @@ function getPlatformIcon(item) {
   return `<div class="w-8 h-8 rounded-xl bg-gradient-to-tr ${bgGrad} border flex items-center justify-center font-bold font-gaming text-sm shrink-0">${firstLetter}</div>`;
 }
 
-function handleGameNameInput(val) {
-  const existing = getPlatformSharedIcon(val);
-  if (existing) {
-    if (existing.startsWith('data:image')) document.getElementById('accCustomIconBase64').value = existing;
-    else document.getElementById('accIconUrl').value = existing;
-    updateIconPreview(existing);
-  }
-}
-
-function handleIconFileSelect(event) {
-  const file = event.target.files[0];
-  if (!file || !file.type.startsWith('image/')) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 80; canvas.height = 80;
-      canvas.getContext('2d').drawImage(img, 0, 0, 80, 80);
-      const compressed = canvas.toDataURL('image/webp', 0.85);
-      document.getElementById('accCustomIconBase64').value = compressed;
-      document.getElementById('accIconUrl').value = '';
-      updateIconPreview(compressed);
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function handleIconUrlInput(url) {
-  document.getElementById('accCustomIconBase64').value = '';
-  updateIconPreview(url.trim());
-}
-
-function updateIconPreview(src) {
-  const box = document.getElementById('iconPreviewBox');
-  const removeBtn = document.getElementById('removeIconBtn');
-  if (src) {
-    box.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
-    removeBtn.classList.remove('hidden');
-  } else {
-    box.innerHTML = `<i data-lucide="image" class="w-5 h-5"></i>`;
-    removeBtn.classList.add('hidden');
-    lucide.createIcons();
-  }
-}
-
-function clearCustomIcon() {
-  document.getElementById('accCustomIconBase64').value = '';
-  document.getElementById('accIconUrl').value = '';
-  document.getElementById('accIconFileInput').value = '';
-  updateIconPreview('');
-}
-
 window.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
   initDragAndDrop();
@@ -149,7 +95,6 @@ function initDragAndDrop() {
     onEnd: async function () {
       const cardElements = Array.from(grid.children);
       const visibleIds = cardElements.map(el => el.getAttribute('data-id')).filter(Boolean);
-
       if (visibleIds.length <= 1) return;
 
       const originalIndices = [];
@@ -171,91 +116,6 @@ function initDragAndDrop() {
       showToast('Đã lưu vị trí sắp xếp mới!');
     }
   });
-}
-
-function openBankTab() {
-  if (isBankUnlocked) {
-    applyCategoryTab('BANK');
-    return;
-  }
-  document.getElementById('pinInput').value = '';
-  if (!bankPinCode) {
-    document.getElementById('pinModalTitle').innerText = 'Tạo Mã PIN Cấp 2';
-    document.getElementById('pinModalSub').innerText = 'Tạo mã PIN 4 số để bảo vệ Két Ngân Hàng. Hãy nhớ kỹ mã này!';
-  } else {
-    document.getElementById('pinModalTitle').innerText = 'Mở Khóa Ngân Hàng';
-    document.getElementById('pinModalSub').innerText = 'Nhập mã PIN 4 số của bạn để xem tài khoản.';
-  }
-  document.getElementById('pinModal').classList.remove('hidden');
-  document.getElementById('pinModal').classList.add('flex');
-  setTimeout(() => document.getElementById('pinInput').focus(), 100);
-}
-
-function closePinModal() {
-  document.getElementById('pinModal').classList.add('hidden');
-  document.getElementById('pinModal').classList.remove('flex');
-}
-
-function submitPin(e) {
-  e.preventDefault();
-  const pin = document.getElementById('pinInput').value.trim();
-  if (pin.length < 4) {
-    showToast('Mã PIN phải đủ 4 số!');
-    return;
-  }
-  
-  if (!bankPinCode) {
-    bankPinCode = pin;
-    pushToCloud();
-    isBankUnlocked = true;
-    closePinModal();
-    applyCategoryTab('BANK');
-    showToast('Đã tạo mã PIN & Mở khóa Két Ngân Hàng!');
-  } else {
-    if (pin === bankPinCode) {
-      isBankUnlocked = true;
-      closePinModal();
-      applyCategoryTab('BANK');
-      showToast('Đã mở khóa Két Ngân Hàng!');
-    } else {
-      showToast('Mã PIN không chính xác!');
-      document.getElementById('pinInput').value = '';
-    }
-  }
-}
-
-function setCategoryTab(category) {
-  if (category === 'BANK') {
-    openBankTab();
-  } else {
-    isBankUnlocked = false; 
-    applyCategoryTab(category);
-  }
-}
-
-function applyCategoryTab(category) {
-  currentCategoryFilter = category;
-  const tabs = [
-    { id: 'tabCatAll', cat: 'ALL', baseCls: 'text-cyan-300 border-cyan-500/50 bg-cyan-500/20' },
-    { id: 'tabCatGame', cat: 'GAME', baseCls: 'text-purple-300 border-purple-500/50 bg-purple-500/20' },
-    { id: 'tabCatSocial', cat: 'SOCIAL', baseCls: 'text-pink-300 border-pink-500/50 bg-pink-500/20' },
-    { id: 'tabCatBank', cat: 'BANK', baseCls: 'text-rose-300 border-rose-500/50 bg-rose-500/20' }
-  ];
-
-  tabs.forEach(t => {
-    const btn = document.getElementById(t.id);
-    if (t.cat === category) {
-      btn.className = `shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border flex items-center gap-1.5 transition ${t.baseCls}`;
-    } else {
-      btn.className = "shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition";
-    }
-  });
-
-  const select = document.getElementById('platformFilterSelect');
-  if (select) select.value = 'ALL';
-
-  updatePlatformFilter(true);
-  renderAccounts();
 }
 
 function switchAuthTab(mode) {
@@ -290,6 +150,26 @@ async function handleAuthSubmit(e) {
     showToast('Đã kết nối đám mây!');
   } catch (err) {
     errorEl.innerText = err.message;
+    errorEl.classList.remove('hidden');
+  }
+}
+
+async function resetFirebasePassword() {
+  const emailInput = document.getElementById('cloudEmail').value.trim();
+  const errorEl = document.getElementById('authErrorMsg');
+  
+  if (!emailInput) {
+    errorEl.innerText = "Vui lòng nhập Email của bạn vào ô trên cùng để nhận link đặt lại mật khẩu!";
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    errorEl.classList.add('hidden');
+    await auth.sendPasswordResetEmail(emailInput);
+    showToast('Đã gửi link khôi phục! Vui lòng kiểm tra hộp thư đến của bạn.');
+  } catch (err) {
+    errorEl.innerText = "Lỗi: " + err.message;
     errorEl.classList.remove('hidden');
   }
 }
@@ -387,109 +267,89 @@ function confirmLogout() {
   showToast('Đã đăng xuất và khóa két an toàn.');
 }
 
-function exportToExcel() {
-  const activeList = accounts.filter(a => {
-    if (a.deleted) return false;
-    if (a.category === 'BANK' && !isBankUnlocked) return false;
-    return true;
-  });
-
-  if (activeList.length === 0) {
-    showToast('Kho dữ liệu đang trống!');
+function openBankTab() {
+  if (isBankUnlocked) {
+    applyCategoryTab('BANK');
     return;
   }
-
-  const excelData = activeList.map(item => ({
-    "Category": item.category === 'BANK' ? 'Banking' : (item.category === 'SOCIAL' ? 'Social Media' : 'Game'),
-    "Platform / Game": item.game || "",
-    "User": item.user || "",
-    "Password": item.password || "",
-    "Email": item.email || "",
-    "Phone number": item.phone || "",
-    "Notes": item.notes || ""
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(excelData);
-  worksheet['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 25 }, { wch: 25 }, { wch: 30 }, { wch: 18 }, { wch: 35 }];
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Accounts");
-  XLSX.writeFile(workbook, `Danh_sach_tai_khoan_${new Date().toISOString().slice(0, 10)}.xlsx`);
-  showToast(`Đã xuất ${activeList.length} tài khoản!`);
+  document.getElementById('pinInput').value = '';
+  if (!bankPinCode) {
+    document.getElementById('pinModalTitle').innerText = 'Tạo Mã PIN Cấp 2';
+    document.getElementById('pinModalSub').innerText = 'Tạo mã PIN 4 số để bảo vệ Két Ngân Hàng. Hãy nhớ kỹ mã này!';
+  } else {
+    document.getElementById('pinModalTitle').innerText = 'Mở Khóa Ngân Hàng';
+    document.getElementById('pinModalSub').innerText = 'Nhập mã PIN 4 số của bạn để xem tài khoản.';
+  }
+  document.getElementById('pinModal').classList.remove('hidden');
+  document.getElementById('pinModal').classList.add('flex');
+  setTimeout(() => document.getElementById('pinInput').focus(), 100);
 }
 
-function handleExcelUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+function closePinModal() {
+  document.getElementById('pinModal').classList.add('hidden');
+  document.getElementById('pinModal').classList.remove('flex');
+}
 
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    try {
-      const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-      const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
+function submitPin(e) {
+  e.preventDefault();
+  const pin = document.getElementById('pinInput').value.trim();
+  if (pin.length < 4) {
+    showToast('Mã PIN phải đủ 4 số!');
+    return;
+  }
+  
+  if (!bankPinCode) {
+    bankPinCode = pin;
+    pushToCloud();
+    isBankUnlocked = true;
+    closePinModal();
+    applyCategoryTab('BANK');
+    showToast('Đã tạo mã PIN & Mở khóa Két Ngân Hàng!');
+  } else {
+    if (pin === bankPinCode) {
+      isBankUnlocked = true;
+      closePinModal();
+      applyCategoryTab('BANK');
+      showToast('Đã mở khóa Két Ngân Hàng!');
+    } else {
+      showToast('Mã PIN không chính xác!');
+      document.getElementById('pinInput').value = '';
+    }
+  }
+}
 
-      let col = { g: -1, u: -1, p: -1, e: -1, ph: -1, n: -1, cat: -1 };
-      let headerIdx = -1;
-      for (let r = 0; r < rows.length; r++) {
-        const row = rows[r].map(c => String(c).trim().toLowerCase());
-        col.g = row.findIndex(c => c.includes('game') || c.includes('platform') || c.includes('nền tảng') || c.includes('tên'));
-        col.u = row.findIndex(c => c.includes('user') || c.includes('tài khoản'));
-        col.p = row.findIndex(c => c.includes('pass') || c.includes('mật khẩu'));
-        if (col.g !== -1 && (col.u !== -1 || col.p !== -1)) {
-          headerIdx = r;
-          col.cat = row.findIndex(c => c.includes('category') || c.includes('loại') || c.includes('danh mục'));
-          col.e = row.findIndex(c => c.includes('email') || c.includes('mail'));
-          col.ph = row.findIndex(c => c.includes('phone') || c.includes('sđt'));
-          col.n = row.findIndex(c => c.includes('note') || c.includes('ghi'));
-          break;
-        }
-      }
+function setCategoryTab(category) {
+  if (category === 'BANK') {
+    openBankTab();
+  } else {
+    isBankUnlocked = false; 
+    applyCategoryTab(category);
+  }
+}
 
-      if (headerIdx === -1) {
-        showToast('Không tìm thấy cột Tên nền tảng/Game / User / Password!'); return;
-      }
+function applyCategoryTab(category) {
+  currentCategoryFilter = category;
+  const tabs = [
+    { id: 'tabCatAll', cat: 'ALL', baseCls: 'text-cyan-300 border-cyan-500/50 bg-cyan-500/20' },
+    { id: 'tabCatGame', cat: 'GAME', baseCls: 'text-purple-300 border-purple-500/50 bg-purple-500/20' },
+    { id: 'tabCatSocial', cat: 'SOCIAL', baseCls: 'text-pink-300 border-pink-500/50 bg-pink-500/20' },
+    { id: 'tabCatBank', cat: 'BANK', baseCls: 'text-rose-300 border-rose-500/50 bg-rose-500/20' }
+  ];
 
-      const socialK = ['facebook', 'fb', 'google', 'gmail', 'tiktok', 'discord', 'telegram', 'twitter', 'x', 'instagram', 'insta', 'zalo', 'youtube'];
-      const bankK = ['bank', 'vcb', 'mbbank', 'momo', 'zalopay', 'paypal', 'binance', 'ngân hàng', 'ví', 'tcb', 'techcombank', 'vietin', 'bidv', 'agribank'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(t.id);
+    if (t.cat === category) {
+      btn.className = `shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border flex items-center gap-1.5 transition ${t.baseCls}`;
+    } else {
+      btn.className = "shrink-0 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60 flex items-center gap-1.5 transition";
+    }
+  });
 
-      let added = 0;
-      for (let r = headerIdx + 1; r < rows.length; r++) {
-        const row = rows[r];
-        const game = col.g !== -1 ? String(row[col.g] || '').trim() : '';
-        const user = col.u !== -1 ? String(row[col.u] || '').trim() : '';
-        
-        let cat = 'GAME';
-        const catCell = col.cat !== -1 ? String(row[col.cat] || '').toLowerCase() : '';
-        if (catCell.includes('bank') || catCell.includes('ngân hàng')) cat = 'BANK';
-        else if (catCell.includes('social')) cat = 'SOCIAL';
-        else if (bankK.some(k => game.toLowerCase().includes(k))) cat = 'BANK';
-        else if (socialK.some(k => game.toLowerCase().includes(k))) cat = 'SOCIAL';
+  const select = document.getElementById('platformFilterSelect');
+  if (select) select.value = 'ALL';
 
-        if (game || user) {
-          accounts.push({
-            id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-            category: cat,
-            game: game || 'Chưa phân loại',
-            user: user,
-            password: col.p !== -1 ? String(row[col.p] || '').trim() : '',
-            email: col.e !== -1 ? String(row[col.e] || '').trim() : '',
-            phone: col.ph !== -1 ? String(row[col.ph] || '').trim() : '',
-            notes: col.n !== -1 ? String(row[col.n] || '').trim() : '',
-            deleted: false
-          });
-          added++;
-        }
-      }
-      if (added > 0) {
-        await pushToCloud();
-        updatePlatformFilter();
-        renderAccounts();
-        showToast(`Đã tải lên ${added} tài khoản!`);
-      }
-    } catch (err) {
-      showToast('Lỗi đọc Excel: ' + err.message);
-    } finally { event.target.value = ''; }
-  };
-  reader.readAsArrayBuffer(file);
+  updatePlatformFilter(true);
+  renderAccounts();
 }
 
 function updatePlatformFilter(resetToAll = false) {
@@ -515,10 +375,6 @@ function updatePlatformFilter(resetToAll = false) {
   } else {
     select.value = 'ALL';
   }
-}
-
-function updateTrashCount() {
-  document.getElementById('trashCountBadge').innerText = accounts.filter(a => a.deleted).length;
 }
 
 function renderAccounts() {
@@ -622,6 +478,60 @@ function toggleModalPassVisibility() {
 
 function copyToClipboard(text, label) {
   navigator.clipboard.writeText(text).then(() => showToast(`Đã sao chép ${label}!`)).catch(() => showToast('Lỗi sao chép!'));
+}
+
+function handleGameNameInput(val) {
+  const existing = getPlatformSharedIcon(val);
+  if (existing) {
+    if (existing.startsWith('data:image')) document.getElementById('accCustomIconBase64').value = existing;
+    else document.getElementById('accIconUrl').value = existing;
+    updateIconPreview(existing);
+  }
+}
+
+function handleIconFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 80; canvas.height = 80;
+      canvas.getContext('2d').drawImage(img, 0, 0, 80, 80);
+      const compressed = canvas.toDataURL('image/webp', 0.85);
+      document.getElementById('accCustomIconBase64').value = compressed;
+      document.getElementById('accIconUrl').value = '';
+      updateIconPreview(compressed);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleIconUrlInput(url) {
+  document.getElementById('accCustomIconBase64').value = '';
+  updateIconPreview(url.trim());
+}
+
+function updateIconPreview(src) {
+  const box = document.getElementById('iconPreviewBox');
+  const removeBtn = document.getElementById('removeIconBtn');
+  if (src) {
+    box.innerHTML = `<img src="${src}" class="w-full h-full object-cover">`;
+    removeBtn.classList.remove('hidden');
+  } else {
+    box.innerHTML = `<i data-lucide="image" class="w-5 h-5"></i>`;
+    removeBtn.classList.add('hidden');
+    lucide.createIcons();
+  }
+}
+
+function clearCustomIcon() {
+  document.getElementById('accCustomIconBase64').value = '';
+  document.getElementById('accIconUrl').value = '';
+  document.getElementById('accIconFileInput').value = '';
+  updateIconPreview('');
 }
 
 function openModal(editId = null) {
@@ -737,7 +647,12 @@ function openTrashModal() {
   document.getElementById('trashModal').classList.remove('hidden'); document.getElementById('trashModal').classList.add('flex');
   lucide.createIcons();
 }
+
 function closeTrashModal() { document.getElementById('trashModal').classList.add('hidden'); document.getElementById('trashModal').classList.remove('flex'); }
+
+function updateTrashCount() {
+  document.getElementById('trashCountBadge').innerText = accounts.filter(a => a.deleted).length;
+}
 
 function renderTrashList() {
   const trashList = document.getElementById('trashList');
@@ -826,6 +741,141 @@ async function executeDelete() {
   closeDeleteConfirmModal();
 }
 
+function exportToExcel() {
+  document.getElementById('exportPassInput').value = '';
+  const modal = document.getElementById('exportConfirmModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  lucide.createIcons();
+  
+  setTimeout(() => document.getElementById('exportPassInput').focus(), 100);
+}
+
+function closeExportModal() {
+  const modal = document.getElementById('exportConfirmModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+function verifyExportPassword(e) {
+  e.preventDefault();
+  const inputPass = document.getElementById('exportPassInput').value;
+  
+  if (inputPass !== masterKey) {
+    showToast('Sai Master Password! Vui lòng thử lại.');
+    document.getElementById('exportPassInput').value = '';
+    return;
+  }
+  
+  closeExportModal();
+  executeExport();
+}
+
+function executeExport() {
+  const activeList = accounts.filter(a => {
+    if (a.deleted) return false;
+    if (a.category === 'BANK' && !isBankUnlocked) return false;
+    return true;
+  });
+
+  if (activeList.length === 0) {
+    showToast('Kho dữ liệu đang trống!');
+    return;
+  }
+
+  const excelData = activeList.map(item => ({
+    "Category": item.category === 'BANK' ? 'Banking' : (item.category === 'SOCIAL' ? 'Social Media' : 'Game'),
+    "Platform / Game": item.game || "",
+    "User": item.user || "",
+    "Password": item.password || "",
+    "Email": item.email || "",
+    "Phone number": item.phone || "",
+    "Notes": item.notes || ""
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  worksheet['!cols'] = [{ wch: 15 }, { wch: 22 }, { wch: 25 }, { wch: 25 }, { wch: 30 }, { wch: 18 }, { wch: 35 }];
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Accounts");
+  XLSX.writeFile(workbook, `Danh_sach_tai_khoan_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  showToast(`Đã xuất ${activeList.length} tài khoản!`);
+}
+
+function handleExcelUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
+
+      let col = { g: -1, u: -1, p: -1, e: -1, ph: -1, n: -1, cat: -1 };
+      let headerIdx = -1;
+      for (let r = 0; r < rows.length; r++) {
+        const row = rows[r].map(c => String(c).trim().toLowerCase());
+        col.g = row.findIndex(c => c.includes('game') || c.includes('platform') || c.includes('nền tảng') || c.includes('tên'));
+        col.u = row.findIndex(c => c.includes('user') || c.includes('tài khoản'));
+        col.p = row.findIndex(c => c.includes('pass') || c.includes('mật khẩu'));
+        if (col.g !== -1 && (col.u !== -1 || col.p !== -1)) {
+          headerIdx = r;
+          col.cat = row.findIndex(c => c.includes('category') || c.includes('loại') || c.includes('danh mục'));
+          col.e = row.findIndex(c => c.includes('email') || c.includes('mail'));
+          col.ph = row.findIndex(c => c.includes('phone') || c.includes('sđt'));
+          col.n = row.findIndex(c => c.includes('note') || c.includes('ghi'));
+          break;
+        }
+      }
+
+      if (headerIdx === -1) {
+        showToast('Không tìm thấy cột Tên nền tảng/Game / User / Password!'); return;
+      }
+
+      const socialK = ['facebook', 'fb', 'google', 'gmail', 'tiktok', 'discord', 'telegram', 'twitter', 'x', 'instagram', 'insta', 'zalo', 'youtube'];
+      const bankK = ['bank', 'vcb', 'mbbank', 'momo', 'zalopay', 'paypal', 'binance', 'ngân hàng', 'ví', 'tcb', 'techcombank', 'vietin', 'bidv', 'agribank'];
+
+      let added = 0;
+      for (let r = headerIdx + 1; r < rows.length; r++) {
+        const row = rows[r];
+        const game = col.g !== -1 ? String(row[col.g] || '').trim() : '';
+        const user = col.u !== -1 ? String(row[col.u] || '').trim() : '';
+        
+        let cat = 'GAME';
+        const catCell = col.cat !== -1 ? String(row[col.cat] || '').toLowerCase() : '';
+        if (catCell.includes('bank') || catCell.includes('ngân hàng')) cat = 'BANK';
+        else if (catCell.includes('social')) cat = 'SOCIAL';
+        else if (bankK.some(k => game.toLowerCase().includes(k))) cat = 'BANK';
+        else if (socialK.some(k => game.toLowerCase().includes(k))) cat = 'SOCIAL';
+
+        if (game || user) {
+          accounts.push({
+            id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            category: cat,
+            game: game || 'Chưa phân loại',
+            user: user,
+            password: col.p !== -1 ? String(row[col.p] || '').trim() : '',
+            email: col.e !== -1 ? String(row[col.e] || '').trim() : '',
+            phone: col.ph !== -1 ? String(row[col.ph] || '').trim() : '',
+            notes: col.n !== -1 ? String(row[col.n] || '').trim() : '',
+            deleted: false
+          });
+          added++;
+        }
+      }
+      if (added > 0) {
+        await pushToCloud();
+        updatePlatformFilter();
+        renderAccounts();
+        showToast(`Đã tải lên ${added} tài khoản!`);
+      }
+    } catch (err) {
+      showToast('Lỗi đọc Excel: ' + err.message);
+    } finally { event.target.value = ''; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg;
   t.classList.remove('translate-y-20', 'opacity-0'); setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 2500);
@@ -838,24 +888,4 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js');
   });
-}
-async function resetFirebasePassword() {
-  const emailInput = document.getElementById('cloudEmail').value.trim();
-  const errorEl = document.getElementById('authErrorMsg');
-  
-  if (!emailInput) {
-    errorEl.innerText = "Vui lòng nhập Email của bạn vào ô trên cùng để nhận link đặt lại mật khẩu!";
-    errorEl.classList.remove('hidden');
-    return;
-  }
-
-  try {
-    errorEl.classList.add('hidden');
-    // Firebase tự động gửi email chứa link reset password
-    await auth.sendPasswordResetEmail(emailInput);
-    showToast('Đã gửi link khôi phục! Vui lòng kiểm tra hộp thư đến (hoặc thư rác) của bạn.');
-  } catch (err) {
-    errorEl.innerText = "Lỗi: " + err.message;
-    errorEl.classList.remove('hidden');
-  }
 }
